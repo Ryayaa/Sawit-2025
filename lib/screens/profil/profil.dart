@@ -1,3 +1,4 @@
+import 'package:admin/screens/profil/editprofilpage.dart';
 import 'package:flutter/material.dart';
 
 
@@ -78,7 +79,7 @@ class ProfilePage extends StatelessWidget {
                 bottomRight: Radius.circular(40),
               ),
             ),
-           padding: const EdgeInsets.only(top: 50, bottom: 40),
+          padding: const EdgeInsets.only(top: 50, bottom: 40),
 child: Stack(
   children: [
     Positioned(
@@ -86,10 +87,7 @@ child: Stack(
       top: 10,
       child: GestureDetector(
         onTap: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()), //ganti halaman cuy
-          );
+          Navigator.of(context).pop(); // kembali ke halaman sebelumnya
         },
         child: Container(
           width: 28,
@@ -106,6 +104,7 @@ child: Stack(
         ),
       ),
     ),
+
 
                 Center(
                   child: Column(
@@ -177,6 +176,26 @@ child: Stack(
                   actionText: '',
                   isValueLink: true,
                 ),
+                ElevatedButton.icon(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditProfilPage()),
+    );
+  },
+  icon: const Icon(Icons.edit, size: 16),
+  label: const Text(
+    'Edit Profil',
+    style: TextStyle(fontSize: 14),
+  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.grey[700],
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+  ),
+),
               ],
             ),
           ),
