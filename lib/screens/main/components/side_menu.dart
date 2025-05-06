@@ -13,8 +13,32 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            child: Image.asset("assets/images/logosawit.png"),
+  decoration: BoxDecoration(
+    color: const Color.fromARGB(28, 28, 46, 255),
+  ),
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      SizedBox(
+        width: 100, // Ukuran lebar logo agar tidak terlalu besar
+        height: 100, // Tinggi juga dibatasi agar seimbang
+        child: Image.asset("assets/images/logo1sawit.png"),
+      ),
+      const SizedBox(width: 12),
+      const Expanded(
+        child: Text(
+          "I-Sawit",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20, // Ukuran font yang proporsional
+            fontWeight: FontWeight.bold,
           ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ],
+  ),
+),
           DrawerListTile(
             title: "Dashboard",
             svgSrc: "assets/icons/menu_dashboard.svg",
