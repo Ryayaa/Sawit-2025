@@ -13,7 +13,7 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            child: Image.asset("assets/images/logo.png"),
+            child: Image.asset("assets/images/logosawit.png"),
           ),
           DrawerListTile(
             title: "Dashboard",
@@ -24,12 +24,12 @@ class SideMenu extends StatelessWidget {
             title: "Profil",
             svgSrc: "assets/icons/menu_tran.svg",
             press: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ProfilePage()),
-    );
-  },
-),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
+            },
+          ),
           DrawerListTile(
             title: "Task",
             svgSrc: "assets/icons/menu_task.svg",
