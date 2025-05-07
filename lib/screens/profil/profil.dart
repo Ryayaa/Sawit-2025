@@ -15,6 +15,26 @@ class ProfileApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
         fontFamily: 'Roboto',
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF1B263B),
+          secondary: Color(0xFF415A77),
+          background: Color(0xFF0D1B2A),
+          surface: Color(0xFF1B263B),
+          onPrimary: Colors.white,
+          onSecondary: Colors.white70,
+          onBackground: Colors.white,
+          onSurface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1B263B),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF415A77),
+            foregroundColor: Colors.white,
+          ),
+        ),
       ),
       home: const ProfilePage(),
       debugShowCheckedModeBanner: false,
@@ -27,6 +47,8 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: Color(0xFF6C63FF),
       bottomNavigationBar: BottomAppBar(
@@ -171,19 +193,19 @@ class ProfilePage extends StatelessWidget {
                   actionText: 'CHANGE',
                   isValueLink: true,
                 ),
-                ProfileRow(
+                const ProfileRow(
                   label: 'sutan***@gmail.com',
                   value: '',
                   actionText: 'CHANGE',
                   isValueLink: true,
                 ),
-                ProfileRow(
+                const ProfileRow(
                   label: 'NO HP',
                   value: '089680510618',
                   actionText: '',
                   isValueLink: true,
                 ),
-                ProfileRow(
+                const ProfileRow(
                   label: 'ALAMAT',
                   value: 'Jl. Sungai Andai Komplek Herlina Perkasa',
                   actionText: '',
@@ -243,17 +265,20 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
+
 void showEmailVerificationDialog(BuildContext context) {
+  final theme = Theme.of(context);
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         contentPadding: const EdgeInsets.all(20),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.mail_outline, size: 48, color: Colors.grey),
+            Icon(Icons.mail_outline, size: 48, color: theme.colorScheme.onSurface),
             const SizedBox(height: 12),
             const Text(
               'Tolong masukkan email untuk verifikasi akun Anda',
@@ -314,6 +339,7 @@ class ProfileRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -338,6 +364,7 @@ class ProfileRow extends StatelessWidget {
               child: Text(
                 value,
                 textAlign: TextAlign.right,
+
                 style: const TextStyle(
                   color: Colors.black87,
                   fontSize: 13,
@@ -362,10 +389,10 @@ class ProfileRow extends StatelessWidget {
                     minimumSize: const Size(30, 30),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text(
-                    actionText,
-                    style: const TextStyle(
-                      color: Colors.blue,
+                  child: const Text(
+                    'CHANGE',
+                    style: TextStyle(
+                      color: Colors.lightBlue,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
