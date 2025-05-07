@@ -40,9 +40,24 @@ class ProfileCard extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
+ @override
+Widget build(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+    },
+    child: Container(
       margin: EdgeInsets.only(left: defaultPadding),
       padding: EdgeInsets.symmetric(
         horizontal: defaultPadding,
@@ -61,35 +76,16 @@ class ProfileCard extends StatelessWidget {
           ),
           if (!Responsive.isMobile(context))
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          ProfilePage(),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: child,
-                        );
-                      },
-                    ),
-                  );
-                },
-                child: Text("Angelina Jolie"),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
+              child: Text("Angelina Jolie"),
             ),
           Icon(Icons.keyboard_arrow_down),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
-
+}
 class SearchField extends StatelessWidget {
   const SearchField({
     Key? key,
