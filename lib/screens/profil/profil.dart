@@ -13,8 +13,7 @@ class ProfileApp extends StatelessWidget {
     return MaterialApp(
       title: 'Profile Page',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0D1B2A),
+        primarySwatch: Colors.blueGrey,
         fontFamily: 'Roboto',
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFF1B263B),
@@ -51,11 +50,12 @@ class ProfilePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Color(0xFF6C63FF),
       bottomNavigationBar: BottomAppBar(
-        color: theme.colorScheme.surface,
-        shape: const CircularNotchedRectangle(),
+        color: Colors.transparent,
+        elevation: 0,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -72,14 +72,17 @@ class ProfilePage extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.search, size: 18),
-                label: const Text('cari', style: TextStyle(fontSize: 12)),
+                label: const Text(
+                  'Cari',
+                  style: TextStyle(fontSize: 13),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.secondary.withOpacity(0.6),
+                  backgroundColor: Colors.blueAccent,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
               ),
             ],
@@ -87,54 +90,68 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
       body: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purpleAccent, Colors.blueAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            padding: const EdgeInsets.only(top: 50, bottom: 40),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 10,
-                  top: 10,
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 16),
-                    ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.only(top: 50, bottom: 40),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 16,
+                top: 1,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
                   ),
+                  onPressed: () => Navigator.pop(context),
                 ),
+              ),
+            
                 Center(
                   child: Column(
                     children: [
                       Container(
-                        width: 80,
-                        height: 80,
-                        color: theme.colorScheme.surface,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'image',
-                          style: TextStyle(color: Colors.white70),
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.person, size: 50, color: Color.fromARGB(255, 59, 55, 55)),
                       ),
                       const SizedBox(height: 12),
                       const Text(
                         'Sutan B.R ✓',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                       ),
                     ],
@@ -146,22 +163,31 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Profil Saya',
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 12),
-                const ProfileRow(
+                const SizedBox(height: 16),
+                ProfileRow(
                   label: 'PASSWORD',
                   value: '',
                   actionText: 'CHANGE',
@@ -185,28 +211,55 @@ class ProfilePage extends StatelessWidget {
                   actionText: '',
                   isValueLink: true,
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const EditProfilPage()),
-                    );
-                  },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Edit Profil', style: TextStyle(fontSize: 14)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.secondary,
-                    foregroundColor: Colors.black, // ubah teks dan ikon jadi warna hitam
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 400),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const EditProfilPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            final offsetAnimation = Tween<Offset>(
+                              begin: const Offset(0.0, 1.0),
+                              end: Offset.zero,
+                            ).animate(animation);
+
+                            final fadeAnimation = Tween<double>(
+                              begin: 0.0,
+                              end: 1.0,
+                            ).animate(animation);
+
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: FadeTransition(
+                                opacity: fadeAnimation,
+                                child: child,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text(
+                      'Edit Profil',
+                      style: TextStyle(fontSize: 14),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -239,7 +292,8 @@ void showEmailVerificationDialog(BuildContext context) {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10, horizontal: 12),
               ),
             ),
             const SizedBox(height: 20),
@@ -251,9 +305,12 @@ void showEmailVerificationDialog(BuildContext context) {
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.secondary,
+                    backgroundColor: Colors.black87,
+                    foregroundColor: Colors.white,
                   ),
                   child: const Text('Submit'),
                 ),
@@ -284,7 +341,7 @@ class ProfileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,10 +349,10 @@ class ProfileRow extends StatelessWidget {
             flex: 3,
             child: Text(
               label,
-              style: TextStyle(
-                color: theme.colorScheme.secondary,
-                decoration: isValueLink ? TextDecoration.underline : TextDecoration.none,
-                fontSize: 12,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -307,9 +364,10 @@ class ProfileRow extends StatelessWidget {
               child: Text(
                 value,
                 textAlign: TextAlign.right,
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface,
-                  fontSize: 12,
+
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 13,
                 ),
                 softWrap: true,
               ),
@@ -323,7 +381,7 @@ class ProfileRow extends StatelessWidget {
                 child: TextButton(
                   onPressed: () {
                     if (actionText == 'CHANGE') {
-                      showEmailVerificationDialog(context);
+                      showEmailVerificationDialog(context); // Memanggil dialog
                     }
                   },
                   style: TextButton.styleFrom(

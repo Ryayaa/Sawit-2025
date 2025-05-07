@@ -11,13 +11,13 @@ class EditProfilApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Edit Profil',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.grey,
-        fontFamily: 'Sans-serif',
-        scaffoldBackgroundColor: Colors.white,
+        fontFamily: 'Roboto',
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purpleAccent),
       ),
       home: const EditProfilPage(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -51,262 +51,163 @@ class _EditProfilPageState extends State<EditProfilPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Edit Profil',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
-        backgroundColor: Colors.grey[600],
-        elevation: 1,
+        title: const Text("Edit Profil", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            Column(
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF6C63FF), Color(0xFFB76DFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
+            child: Column(
               children: [
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      child: const Icon(Icons.person, size: 50, color: Colors.white),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.purpleAccent,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      padding: const EdgeInsets.all(5),
+                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text('Sutan B.R', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                const SizedBox(height: 24),
                 Container(
-                  width: 80,
-                  height: 80,
-                  color: Colors.grey[300],
-                  alignment: Alignment.center,
-                  child: const Text('IMAGE',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        _buildTextField('Nama', _namaController),
+                        _buildTextField('Email', _emailController, inputType: TextInputType.emailAddress),
+                        _buildTextField('Password', _passwordController, isPassword: true),
+                        _buildTextField('No. Telp', _telpController, inputType: TextInputType.phone),
+                        _buildTextField('Alamat', _alamatController),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                            backgroundColor: Colors.purpleAccent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Profil disimpan!")),
+                              );
+                            }
+                          },
+                          child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text(
-                      'Sutan B.R',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.edit, size: 14),
-                  ],
+                const SizedBox(height: 16),
+                const Text(
+                  'Note: Untuk mengubah password anda perlu verifikasi email terlebih dahulu',
+                  style: TextStyle(fontSize: 10, color: Colors.white70),
+                  textAlign: TextAlign.center,
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    _buildTextField(label: 'Nama', controller: _namaController),
-                    _buildTextField(label: 'Email', controller: _emailController, keyboardType: TextInputType.emailAddress),
-                    _buildTextField(label: 'Password', controller: _passwordController, obscureText: true),
-                    _buildTextField(label: 'No. Telp', controller: _telpController, keyboardType: TextInputType.phone),
-                    _buildTextField(label: 'Alamat', controller: _alamatController),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 36,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[400],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            // Do something on save
-                          }
-                        },
-                        child: const Text(
-                          'Simpan',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Note: Untuk mengubah password anda perlu verifikasi email terlebih dahulu',
-                      style: TextStyle(
-                        fontSize: 8,
-                        color: Colors.grey,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        elevation: 1,
-        child: SizedBox(
-          height: 56,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildBottomNavItem(icon: Icons.home, label: 'Home', isActive: false, onTap: () {}),
-              _buildBottomNavItemWithImage(
-                imageUrl: 'https://placehold.co/24x24?text=Map',
-                label: 'Location',
-                isActive: false,
-                onTap: () {},
-              ),
-              _buildBottomNavItem(icon: Icons.person, label: 'Profil', isActive: true, onTap: () {}),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required TextEditingController controller,
-    String? hintText,
-    bool obscureText = false,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          TextFormField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            decoration: InputDecoration(
-              hintText: hintText ?? controller.text,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(5),
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(5),
-                ),
-                borderSide: BorderSide(color: Colors.grey.shade400),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(5),
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(5),
-                ),
-                borderSide: BorderSide(color: Colors.grey.shade600),
-              ),
-              isDense: true,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    final color = isActive ? Colors.white : Colors.grey[700];
-    final bgColor = isActive ? Colors.grey[400] : Colors.transparent;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(6),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF6C63FF), Color(0xFFB76DFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: BottomAppBar(
+          color: Colors.transparent,
+          elevation: 0,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavItem(Icons.home, "Home", false),
+                _buildNavItem(Icons.location_on, "Location", false),
+                _buildNavItem(Icons.person, "Profil", true),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBottomNavItemWithImage({
-    required String imageUrl,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    final color = isActive ? Colors.white : Colors.grey[700];
-    final bgColor = isActive ? Colors.grey[400] : Colors.transparent;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(6),
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false, TextInputType inputType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: inputType,
+        obscureText: isPassword,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.05),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Colors.purpleAccent),
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.network(
-              imageUrl,
-              width: 24,
-              height: 24,
-              color: color,
-              colorBlendMode: BlendMode.srcIn,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.map, color: color, size: 20);
-              },
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
+        validator: (value) => value == null || value.isEmpty ? 'Field tidak boleh kosong' : null,
       ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool active) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: active ? Colors.white : Colors.white70),
+        Text(label, style: TextStyle(color: active ? Colors.white : Colors.white70, fontSize: 12)),
+      ],
     );
   }
 }
