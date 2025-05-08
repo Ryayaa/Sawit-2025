@@ -1,9 +1,8 @@
 // screens/profile/profile_page.dart
 import 'package:flutter/material.dart';
-import 'package:admin/screens/profil/editprofilpage.dart';
-import 'package:admin/screens/widgets/profile_row.dart';
+import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
+import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
 import 'package:admin/screens/main/components/side_menu.dart';
-
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -81,7 +80,7 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.only(top: 50, bottom: 40),
-      child: Stack(
+     child: Stack(
   children: [
     Positioned(
       left: 16,

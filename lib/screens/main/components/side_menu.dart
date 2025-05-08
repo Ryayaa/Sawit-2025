@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:admin/screens/profil/profil.dart';
+import '../../../screens/history/history_screen.dart';
+import '../../../screens/dashboard/dashboard_screen.dart';
+import 'package:provider/provider.dart';
+import '../../../controllers/menu_app_controller.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -13,12 +17,69 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            child: Image.asset("assets/images/logosawit.png"),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(28, 28, 46, 255),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 100, // Ukuran lebar logo agar tidak terlalu besar
+                  height: 100, // Tinggi juga dibatasi agar seimbang
+                  child: Image.asset("assets/images/logo1sawit.png"),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "I-Sawit",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20, // Ukuran font yang proporsional
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           DrawerListTile(
             title: "Dashboard",
             svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {},
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider(
+                        create: (context) => MenuAppController(),
+                      ),
+                    ],
+                    child: const DashboardScreen(),
+                  ),
+                ),
+              );
+            },
+          ),
+          DrawerListTile(
+            title: "Log History",
+            svgSrc: "assets/icons/menu_doc.svg",
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider(
+                        create: (context) => MenuAppController(),
+                      ),
+                    ],
+                    child: const HistoryScreen(),
+                  ),
+                ),
+              );
+            },
           ),
           DrawerListTile(
             title: "Profil",
@@ -31,33 +92,8 @@ class SideMenu extends StatelessWidget {
             },
           ),
           DrawerListTile(
-            title: "Task",
-            svgSrc: "assets/icons/menu_task.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Documents",
-            svgSrc: "assets/icons/menu_doc.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Store",
-            svgSrc: "assets/icons/menu_store.svg",
-            press: () {},
-          ),
-          DrawerListTile(
             title: "Notification",
             svgSrc: "assets/icons/menu_notification.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Profile",
-            svgSrc: "assets/icons/menu_profile.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Settings",
-            svgSrc: "assets/icons/menu_setting.svg",
             press: () {},
           ),
         ],

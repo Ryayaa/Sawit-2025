@@ -8,8 +8,10 @@ import 'package:admin/screens/profil/profil.dart';
 import '../../../constants.dart';
 
 class Header extends StatelessWidget {
+  final String title;
   const Header({
     Key? key,
+    this.title = "Dashboard", // Default title
   }) : super(key: key);
 
   @override
@@ -23,12 +25,10 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Text(
-            "Dashboard",
+            title,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-        if (!Responsive.isMobile(context))
-          Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-        Expanded(child: SearchField()),
+        const Spacer(), // Replace Expanded(child: SearchField()) with Spacer
         ProfileCard()
       ],
     );
@@ -76,15 +76,36 @@ Widget build(BuildContext context) {
           ),
           if (!Responsive.isMobile(context))
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-              child: Text("Angelina Jolie"),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          ProfilePage(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+                child: Text("Angelina Jolie"),
+              ),
             ),
           Icon(Icons.keyboard_arrow_down),
         ],
       ),
-    ),
+    )
   );
-}
+  
+
+  }
 }
 class SearchField extends StatelessWidget {
   const SearchField({
