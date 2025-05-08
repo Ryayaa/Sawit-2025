@@ -4,11 +4,14 @@ import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
 import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
 import 'package:admin/screens/main/components/side_menu.dart';
 
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFF6C63FF),
       bottomNavigationBar: _buildBottomNavBar(),
