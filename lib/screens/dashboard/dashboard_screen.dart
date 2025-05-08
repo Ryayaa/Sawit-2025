@@ -36,8 +36,7 @@ class DashboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(defaultPadding),
                 child: Column(
                   children: [
-                    // Header with menu button
-                    const Header(),
+                    const Header(), // Will use default "Dashboard" title
                     const SizedBox(height: defaultPadding),
 
                     // Widget cuaca dan suhu
