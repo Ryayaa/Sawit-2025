@@ -25,12 +25,10 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Text(
-            title, // Use the passed title instead of hardcoded "Dashboard"
+            title,
             style: Theme.of(context).textTheme.titleLarge,
           ),
-        if (!Responsive.isMobile(context))
-          Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-        Expanded(child: SearchField()),
+        const Spacer(), // Replace Expanded(child: SearchField()) with Spacer
         ProfileCard()
       ],
     );
