@@ -8,8 +8,10 @@ import 'package:admin/screens/profil/profil.dart';
 import '../../../constants.dart';
 
 class Header extends StatelessWidget {
+  final String title;
   const Header({
     Key? key,
+    this.title = "Dashboard", // Default title
   }) : super(key: key);
 
   @override
@@ -23,7 +25,7 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Text(
-            "Dashboard",
+            title, // Use the passed title instead of hardcoded "Dashboard"
             style: Theme.of(context).textTheme.titleLarge,
           ),
         if (!Responsive.isMobile(context))
