@@ -1,0 +1,5 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "cmake.sourceDirectory": "C:/laragon/www/Sawit/windows",
+    "C_Cpp.errorSquiggles": "enabled"
+}
