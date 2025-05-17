@@ -8,10 +8,13 @@ import '../../responsive.dart';
 import 'components/header.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
+import '../../services/sensor_service.dart';
 import 'components/recent_measurements_table.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  DashboardScreen({super.key}); // Removed const
+
+  final SensorService _sensorService = SensorService();
 
   @override
   Widget build(BuildContext context) {
@@ -47,24 +50,33 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: defaultPadding),
 
                     // Modul 1
-                    LiveChart(
-                      moduleName: 'Modul 1',
-                      temperatureData: [
-                        FlSpot(0, 28),
-                        FlSpot(1, 29),
-                        FlSpot(2, 30),
-                        FlSpot(3, 28.5),
-                      ],
-                      humidityData: [
-                        FlSpot(0, 60),
-                        FlSpot(1, 62),
-                        FlSpot(2, 64),
-                        FlSpot(3, 63),
-                      ],
-                      temperatureLabel: 'Suhu (°C)',
-                      humidityLabel: 'Kelembapan (%)',
-                      yInterval: 10,
-                    ),
+                    StreamBuilder<Map<String, dynamic>>(
+                        stream: _sensorService.getLiveModuleData('module1'),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          }
+
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          final data = snapshot.data!;
+                          return LiveChart(
+                            moduleName: 'Modul 1',
+                            temperatureData: [
+                              FlSpot(0, data['temperature']?.toDouble() ?? 0),
+                            ],
+                            humidityData: [
+                              FlSpot(0, data['humidity']?.toDouble() ?? 0),
+                            ],
+                            temperatureLabel: 'Suhu (°C)',
+                            humidityLabel: 'Kelembapan (%)',
+                            yInterval: 10,
+                          );
+                        }),
                     const SizedBox(height: defaultPadding),
 
                     // Modul 2

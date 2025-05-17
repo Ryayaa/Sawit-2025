@@ -56,7 +56,7 @@ class SideMenu extends StatelessWidget {
                         create: (context) => MenuAppController(),
                       ),
                     ],
-                    child: const DashboardScreen(),
+                    child: DashboardScreen(), // Removed const here
                   ),
                 ),
               );

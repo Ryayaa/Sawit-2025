@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../../constants.dart';
 import 'forgot_password_screen.dart';
@@ -25,26 +26,47 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      if (_usernameController.text == "admin" &&
-          _passwordController.text == "password123") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                  create: (context) => MenuAppController(),
-                ),
-              ],
-              child: const DashboardScreen(),
-            ),
-          ),
+      try {
+        // Convert username to email format
+        String email = _usernameController.text;
+        if (!email.contains('@')) {
+          email = '$email@sawit.com';
+        }
+
+        final credential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: _passwordController.text,
         );
-      } else {
+
+        if (credential.user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (context) => MenuAppController(),
+                  ),
+                ],
+                child: DashboardScreen(),
+              ),
+            ),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        String message;
+        if (e.code == 'user-not-found') {
+          message = 'Username tidak ditemukan';
+        } else if (e.code == 'wrong-password') {
+          message = 'Password salah';
+        } else {
+          message = e.message ?? 'Terjadi kesalahan';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid credentials')),
+          SnackBar(content: Text(message)),
         );
       }
     }
