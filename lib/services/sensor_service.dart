@@ -4,42 +4,45 @@ import 'package:fl_chart/fl_chart.dart';
 class SensorService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
 
-  // Stream of real-time sensor data
+  // Stream of real-time data from "module1/latest"
   Stream<Map<String, dynamic>> getLiveModuleData(String moduleId) {
     return _database
-        .child('sensor_modules/$moduleId/latest_reading')
+        .child('$moduleId/latest') // Menyesuaikan path sesuai struktur DB
         .onValue
         .map((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
       if (data == null) return {};
 
       return {
-        'temperature': data['temperature'] ?? 0.0,
-        'soilMoisture': data['soilMoisture'] ?? 0.0,
-        'humidity': data['humidity'] ?? 0.0,
+        'temperature': (data['temperature'] ?? 0).toDouble(),
+        'soilMoisture': (data['soilMoisture'] ?? 0).toDouble(),
+        'humidity': (data['humidity'] ?? 0).toDouble(),
         'timestamp': data['timestamp'] ?? 0,
       };
     });
   }
 
-  // Get historical data
-  Stream<List<FlSpot>> getHistoricalData(String dataType) {
+  // Stream of historical data (misalnya dari "module1" -> data lainnya)
+  Stream<List<FlSpot>> getHistoricalData(String moduleId, String dataType) {
     return _database
-        .child('sensor_modules/module1/readings')
-        .limitToLast(24) // Last 24 readings
+        .child('$moduleId') // Ambil langsung dari moduleId (misal: module1)
+        .orderByKey()
         .onValue
         .map((event) {
-      final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (data == null) return [];
+      final rawData = event.snapshot.value as Map<dynamic, dynamic>?;
+
+      if (rawData == null) return [];
 
       final List<FlSpot> spots = [];
-      var index = 0.0;
+      double index = 0;
 
-      data.forEach((key, value) {
-        spots.add(FlSpot(
-          index++,
-          (value[dataType] ?? 0.0).toDouble(),
-        ));
+      // Ambil hanya child yang bukan 'latest'
+      rawData.forEach((key, value) {
+        if (key != 'latest' && value is Map) {
+          final yValue = (value[dataType] ?? 0.0).toDouble();
+          spots.add(FlSpot(index++, yValue));
+        }
       });
 
       return spots;
