@@ -1,21 +1,55 @@
-// screens/profile/profile_page.dart
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
 import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
-import 'package:admin/screens/main/components/side_menu.dart';
+import 'package:admin/screens/main/components/side_menu_user.dart';
 
-
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
+class _ProfilePageState extends State<ProfilePage> {
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref().child('User');
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  print('Current UID: $uid');
+
+  if (uid != null) {
+    final snapshot = await _dbRef.child(uid).get();
+    if (snapshot.exists) {
+      print('Data snapshot: ${snapshot.value}');
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      if (data['role'] == 1 || data['role'] == 2) {
+        setState(() {
+          userData = data;
+        });
+      }
+    }
+     else {
+      print('No data found for UID $uid');
+    }
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF6C63FF),
       bottomNavigationBar: _buildBottomNavBar(),
-      drawer: const SideMenu(),
+      drawer: const SideMenuUser(),
       body: Column(
         children: [
           _buildHeader(context),
@@ -83,19 +117,18 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.only(top: 50, bottom: 40),
-     child: Stack(
-  children: [
-    Positioned(
-      left: 16,
-      top: 1,
-      child: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
-    ),
-
+      child: Stack(
+        children: [
+          Positioned(
+            left: 16,
+            top: 1,
+            child: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+          ),
           Center(
             child: Column(
               children: [
@@ -117,9 +150,9 @@ class ProfilePage extends StatelessWidget {
                   child: const Icon(Icons.person, size: 50, color: Color.fromARGB(255, 59, 55, 55)),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Sutan B.R ✓',
-                  style: TextStyle(
+                Text(
+                  userData?['name'] ?? 'Loading...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -148,56 +181,56 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Profil Saya',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black87)),
-          const SizedBox(height: 16),
-          const ProfileRow(label: 'PASSWORD', value: '', actionText: 'CHANGE'),
-          const ProfileRow(label: 'sutan***@gmail.com', value: '', actionText: 'CHANGE'),
-          const ProfileRow(label: 'NO HP', value: '089680510618', actionText: ''),
-          const ProfileRow(
-              label: 'ALAMAT', value: 'Jl. Sungai Andai Komplek Herlina Perkasa', actionText: ''),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 400),
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const EditProfilPage(),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      final offsetAnimation = Tween<Offset>(
-                        begin: const Offset(0.0, 1.0),
-                        end: Offset.zero,
-                      ).animate(animation);
-                      final fadeAnimation = Tween<double>(
-                        begin: 0.0,
-                        end: 1.0,
-                      ).animate(animation);
+      child: userData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Profil Saya',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 16),
+                ProfileRow(label: 'EMAIL', value: userData?['email'] ?? '', actionText: 'CHANGE'),
+                ProfileRow(label: 'NO HP', value: userData?['nomor telepon'] ?? '-', actionText: ''),
+                ProfileRow(label: 'ALAMAT', value: userData?['alamat'] ?? '-', actionText: ''),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 400),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const EditProfilPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            final offsetAnimation = Tween<Offset>(
+                              begin: const Offset(0.0, 1.0),
+                              end: Offset.zero,
+                            ).animate(animation);
+                            final fadeAnimation = Tween<double>(
+                              begin: 0.0,
+                              end: 1.0,
+                            ).animate(animation);
 
-                      return SlideTransition(
-                        position: offsetAnimation,
-                        child: FadeTransition(opacity: fadeAnimation, child: child),
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: FadeTransition(opacity: fadeAnimation, child: child),
+                            );
+                          },
+                        ),
                       );
                     },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit Profil', style: TextStyle(fontSize: 14)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.edit, size: 16),
-              label: const Text('Edit Profil', style: TextStyle(fontSize: 14)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
