@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; // Add this import
-import '../../constants.dart';
-import '../../controllers/menu_app_controller.dart';
-import '../../responsive.dart';
-import '../main/components/side_menu.dart';
-import '../dashboard/components/header.dart';
+import 'package:intl/intl.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -23,46 +17,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: context.read<MenuAppController>().scaffoldKey,
-      drawer: const SideMenu(),
-      body: SafeArea(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3A7D44)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          "Log History",
+          style: TextStyle(color: Color(0xFF3A7D44), fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            if (Responsive.isDesktop(context))
-              const Expanded(
-                flex: 1,
-                child: SideMenu(),
-              ),
-            Expanded(
-              flex: 5,
-              child: SingleChildScrollView(
-                primary: false,
-                padding: const EdgeInsets.all(defaultPadding),
+            Card(
+              color: Colors.white,
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Header(title: "Log History"),
-                    const SizedBox(height: defaultPadding),
-                    Container(
-                      padding: const EdgeInsets.all(defaultPadding),
-                      decoration: BoxDecoration(
-                        color: secondaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Responsive filter controls
-                          if (Responsive.isMobile(context))
-                            _buildMobileFilters()
-                          else
-                            _buildDesktopFilters(),
-                          const SizedBox(height: defaultPadding),
-                          // Responsive table
-                          _buildResponsiveTable(),
-                        ],
-                      ),
-                    ),
+                    // Filter
+                    _buildFilters(context),
+                    const SizedBox(height: 16),
+                    // Table
+                    _buildResponsiveTable(context),
                   ],
                 ),
               ),
@@ -73,33 +59,54 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildMobileFilters() {
+  Widget _buildFilters(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Date Range"),
+        const Text("Date Range", style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.calendar_today),
-          label: Text(startDate == null
-              ? "Start Date"
-              : DateFormat('yyyy-MM-dd').format(startDate!)),
-          onPressed: () => _selectDate(true),
-        ),
-        const SizedBox(height: 8),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.calendar_today),
-          label: Text(endDate == null
-              ? "End Date"
-              : DateFormat('yyyy-MM-dd').format(endDate!)),
-          onPressed: () => _selectDate(false),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.calendar_today),
+                label: Text(startDate == null
+                    ? "Start Date"
+                    : DateFormat('yyyy-MM-dd').format(startDate!)),
+                onPressed: () => _selectDate(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[100],
+                  foregroundColor: Colors.black87,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.calendar_today),
+                label: Text(endDate == null
+                    ? "End Date"
+                    : DateFormat('yyyy-MM-dd').format(endDate!)),
+                onPressed: () => _selectDate(false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[100],
+                  foregroundColor: Colors.black87,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        const Text("Module"),
+        const Text("Module", style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
           ),
           value: selectedModule,
           items: modules
@@ -116,87 +123,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildDesktopFilters() {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Date Range"),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.calendar_today),
-                      label: Text(startDate == null
-                          ? "Start Date"
-                          : DateFormat('yyyy-MM-dd').format(startDate!)),
-                      onPressed: () => _selectDate(true),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.calendar_today),
-                      label: Text(endDate == null
-                          ? "End Date"
-                          : DateFormat('yyyy-MM-dd').format(endDate!)),
-                      onPressed: () => _selectDate(false),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Module"),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                value: selectedModule,
-                items: modules
-                    .map((module) => DropdownMenuItem(
-                          value: module,
-                          child: Text(module),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() => selectedModule = value!);
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResponsiveTable() {
-    final isMobile = Responsive.isMobile(context);
+  Widget _buildResponsiveTable(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final rows = _getFilteredRows();
 
     if (isMobile) {
       return Column(
-        children: _getFilteredRows().map((row) {
+        children: rows.map((row) {
           final cells = row.cells;
           final dateTime = (cells[0].child as Text).data!;
-          final date = dateTime.split(' ')[0]; // Get date part
-          final time = dateTime.split(' ')[1]; // Get time part
+          final date = dateTime.split(' ')[0];
+          final time = dateTime.split(' ')[1];
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: _getModuleColor((cells[1].child as Text).data!),
-            ),
+          return Card(
+            color: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -205,46 +148,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        (cells[1].child as Text).data!,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      Row(
+                        children: [
+                          Icon(Icons.memory, color: Colors.blueGrey[400], size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            (cells[1].child as Text).data!,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF3A7D44),
+                            ),
+                          ),
+                        ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            date, // Show date
+                            date,
                             style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
+                              fontSize: 15,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            time, // Show time
+                            time,
                             style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.black54,
                             ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.thermostat,
-                          color: Colors.white70, size: 20),
+                      Icon(Icons.thermostat, color: Colors.orange[400], size: 18),
                       const SizedBox(width: 8),
                       Text(
                         "Suhu: ${(cells[2].child as Text).data}",
                         style: const TextStyle(
-                          color: Colors.white,
+                          fontSize: 15,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -252,13 +202,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.water_drop,
-                          color: Colors.white70, size: 20),
+                      Icon(Icons.water_drop, color: Colors.blue[400], size: 18),
                       const SizedBox(width: 8),
                       Text(
                         "Kelembapan: ${(cells[3].child as Text).data}",
                         style: const TextStyle(
-                          color: Colors.white,
+                          fontSize: 15,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -270,28 +221,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
         }).toList(),
       );
     } else {
-      return DataTable(
-        columns: const [
-          DataColumn(label: Text("Date/Time")),
-          DataColumn(label: Text("Module")),
-          DataColumn(label: Text("Temperature")),
-          DataColumn(label: Text("Soil Moisture")),
-        ],
-        rows: _getFilteredRows(),
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          headingRowColor: MaterialStateProperty.all(const Color(0xFFF5F6FA)),
+          columns: const [
+            DataColumn(label: Text("Date/Time", style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text("Module", style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text("Temperature", style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(label: Text("Soil Moisture", style: TextStyle(fontWeight: FontWeight.bold))),
+          ],
+          rows: rows,
+        ),
       );
-    }
-  }
-
-  Color _getModuleColor(String moduleName) {
-    switch (moduleName) {
-      case 'Module 1':
-        return const Color(0xFF8B4513); // Brown/Maroon color
-      case 'Module 2':
-        return const Color(0xFF1E4478); // Dark blue color
-      case 'Module 3':
-        return const Color(0xFF2F4F4F); // Dark green color
-      default:
-        return Colors.blueGrey;
     }
   }
 
@@ -316,38 +258,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<DataRow> _getFilteredRows() {
-    return List.generate(
-      15,
-      (index) {
-        final date = DateTime.now().subtract(Duration(minutes: index * 5));
-        final moduleNum = (index % 3) + 1;
-
-        // Fix date comparison by converting to date only (removing time)
-        final dateOnly = DateTime(date.year, date.month, date.day);
-        final startDateOnly = startDate != null
-            ? DateTime(startDate!.year, startDate!.month, startDate!.day)
-            : null;
-        final endDateOnly = endDate != null
-            ? DateTime(endDate!.year, endDate!.month, endDate!.day)
-            : null;
-
-        // Apply filters with corrected date comparison
-        if (startDateOnly != null && dateOnly.isBefore(startDateOnly))
-          return null;
-        if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) return null;
-        if (selectedModule != 'All' && 'Module $moduleNum' != selectedModule)
-          return null;
-
-        return DataRow(
-          cells: [
-            DataCell(Text(DateFormat('yyyy-MM-dd HH:mm')
-                .format(date))), // Format date nicely
-            DataCell(Text("Module $moduleNum")),
-            DataCell(Text("${28 + (index % 3)}°C")),
-            DataCell(Text("${60 + (index % 3)}%")),
-          ],
-        );
-      },
-    ).where((row) => row != null).cast<DataRow>().toList();
+    final List<DataRow> rows = [];
+    for (int index = 0; index < 15; index++) {
+      final date = DateTime.now().subtract(Duration(minutes: index * 5));
+      final moduleNum = (index % 3) + 1;
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      final startDateOnly = startDate != null
+          ? DateTime(startDate!.year, startDate!.month, startDate!.day)
+          : null;
+      final endDateOnly = endDate != null
+          ? DateTime(endDate!.year, endDate!.month, endDate!.day)
+          : null;
+      if (startDateOnly != null && dateOnly.isBefore(startDateOnly)) continue;
+      if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) continue;
+      if (selectedModule != 'All' && 'Module $moduleNum' != selectedModule) continue;
+      rows.add(DataRow(
+        cells: [
+          DataCell(Text(DateFormat('yyyy-MM-dd HH:mm').format(date))),
+          DataCell(Text("Module $moduleNum")),
+          DataCell(Text("${28 + (index % 3)}°C")),
+          DataCell(Text("${60 + (index % 3)}%")),
+        ],
+      ));
+    }
+    return rows;
   }
 }

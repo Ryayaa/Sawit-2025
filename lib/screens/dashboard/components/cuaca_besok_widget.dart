@@ -14,36 +14,53 @@ class CuacaBesokWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1C2E),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          // Widget suhu terkini
+          // Suhu terkini
           Expanded(
             child: Row(
               children: [
-                SvgPicture.asset(
-                  "assets/icons/temperature.svg",
-                  height: 36,
-                  width: 36,
-                  color: Colors.orangeAccent,
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: SvgPicture.asset(
+                    "assets/icons/temperature.svg",
+                    height: 28,
+                    width: 28,
+                    color: Colors.orange,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Suhu Terkini",
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
                     ),
                     Text(
                       "$suhuTerkini°C",
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
+                        color: Colors.orange,
+                        fontSize: 18, // dari 22 jadi 18
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -52,30 +69,46 @@ class CuacaBesokWidget extends StatelessWidget {
               ],
             ),
           ),
-
-          // Widget cuaca besok
+          // Divider vertikal
+          Container(
+            width: 1,
+            height: 48,
+            color: Colors.grey[300],
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+          ),
+          // Ramalan besok
           Expanded(
             child: Row(
               children: [
-                SvgPicture.asset(
-                  "assets/icons/weather.svg",
-                  height: 36,
-                  width: 36,
-                  color: Colors.lightBlueAccent,
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.lightBlue.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: SvgPicture.asset(
+                    "assets/icons/weather.svg",
+                    height: 28,
+                    width: 28,
+                    color: Colors.lightBlue,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Ramalan Besok",
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
                     ),
                     Text(
                       ramalanBesok,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                        color: Colors.lightBlue,
+                        fontSize: 15, // dari 18 jadi 15
                         fontWeight: FontWeight.bold,
                       ),
                     ),

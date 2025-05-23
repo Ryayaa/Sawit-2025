@@ -53,109 +53,161 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Card(
-            margin: const EdgeInsets.all(defaultPadding),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo or App Name
-                      const Text(
-                        "SAWIT",
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFF9E79F), // pastel kuning
+              Color(0xFFFAD7A0), // pastel oranye
+              Color(0xFFA9DFBF), // pastel hijau
+              Color(0xFF3A7D44), // hijau daun sawit (lebih gelap)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Card(
+              color: Color(0xFF264D32), // hijau gelap elegan
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              margin: const EdgeInsets.all(defaultPadding),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(defaultPadding * 2),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 320), // Ubah dari 400 ke 320
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Logo di atas
+                        Image.asset(
+                          'assets/images/logo1sawit.png',
+                          height: 180, // Ubah dari 80 ke 110 agar logo lebih besar
                         ),
-                      ),
-                      const SizedBox(height: defaultPadding * 2),
+                        const SizedBox(height: defaultPadding),
 
-                      // Username Field
-                      Material(
-                        child: TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Username',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        // App Name dengan gradient text
+                        ShaderMask(
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [
+                              Color(0xFFF9D923),
+                              Color(0xFFF27329),
+                              Color(0xFF3A7D44),
+                            ],
+                          ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
+                          child: const Text(
+                            "I-SAWIT",
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 2,
                             ),
-                            prefixIcon: const Icon(Icons.person),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your username';
-                            }
-                            return null;
-                          },
                         ),
-                      ),
-                      const SizedBox(height: defaultPadding),
+                        const SizedBox(height: defaultPadding * 2),
 
-                      // Password Field
-                      Material(
-                        child: TextFormField(
-                          controller: _passwordController,
-                          obscureText: !_isPasswordVisible,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            prefixIcon: const Icon(Icons.lock),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
+                        // Username Field
+                        Material(
+                          color: Colors.transparent,
+                          child: TextFormField(
+                            controller: _usernameController,
+                            style: const TextStyle(color: Colors.black), // Teks jadi hitam
+                            decoration: InputDecoration(
+                              labelText: 'Username',
+                              labelStyle: TextStyle(color: Colors.grey[700]), // abu-abu
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
+                              prefixIcon: const Icon(Icons.person, color: Colors.black),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your username';
+                              }
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
                         ),
-                      ),
-                      const SizedBox(height: defaultPadding * 2),
+                        const SizedBox(height: defaultPadding),
 
-                      // Login Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _login,
-                          child: const Text('Login'),
-                        ),
-                      ),
-                      const SizedBox(height: defaultPadding),
-
-                      // Forgot Password Link
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const ForgotPasswordScreen(),
+                        // Password Field
+                        Material(
+                          color: Colors.transparent,
+                          child: TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            style: const TextStyle(color: Colors.black), // Teks jadi hitam
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              labelStyle: TextStyle(color: Colors.grey[700]), // abu-abu
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.black),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                  color: Colors.black,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
                             ),
-                          );
-                        },
-                        child: const Text('Forgot Password?'),
-                      ),
-                    ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: defaultPadding * 2),
+
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF27329), // oranye
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: _login,
+                            child: const Text('Login'),
+                          ),
+                        ),
+                        const SizedBox(height: defaultPadding),
+
+                        // Forgot Password Link
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text('Forgot Password?'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

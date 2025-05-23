@@ -7,96 +7,132 @@ import 'package:provider/provider.dart';
 import '../../../controllers/menu_app_controller.dart';
 
 class SideMenu extends StatelessWidget {
-  const SideMenu({
-    Key? key,
-  }) : super(key: key);
+  const SideMenu({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(28, 28, 46, 255),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 100, // Ukuran lebar logo agar tidak terlalu besar
-                  height: 100, // Tinggi juga dibatasi agar seimbang
-                  child: Image.asset("assets/images/logo1sawit.png"),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
+      ),
+      child: Container(
+        color: const Color(0xFFF5F6FA), // ganti dari Colors.white ke warna soft
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 255, 255, 255),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1A3A7D44),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Tambahkan gradient & shadow pada avatar/logo
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFF27329), Color(0xFF3A7D44)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x33F27329),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 32,
+                      backgroundColor: Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Image.asset("assets/images/logo1sawit.png"),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
                     "I-Sawit",
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20, // Ukuran font yang proporsional
+                      color: Color(0xFF3A7D44),
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          DrawerListTile(
-            title: "Dashboard",
-            svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                        create: (context) => MenuAppController(),
-                      ),
-                    ],
-                    child: const DashboardScreen(),
+            const SizedBox(height: 8),
+            DrawerListTile(
+              title: "Dashboard",
+              svgSrc: "assets/icons/menu_dashboard.svg",
+              selected: ModalRoute.of(context)?.settings.name == '/dashboard',
+              press: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MultiProvider(
+                      providers: [
+                        ChangeNotifierProvider(
+                          create: (context) => MenuAppController(),
+                        ),
+                      ],
+                      child: const DashboardScreen(),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-          DrawerListTile(
-            title: "Log History",
-            svgSrc: "assets/icons/menu_doc.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                        create: (context) => MenuAppController(),
-                      ),
-                    ],
-                    child: const HistoryScreen(),
+                );
+              },
+            ),
+            DrawerListTile(
+              title: "Log History",
+              svgSrc: "assets/icons/menu_doc.svg",
+              selected: ModalRoute.of(context)?.settings.name == '/history',
+              press: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MultiProvider(
+                      providers: [
+                        ChangeNotifierProvider(
+                          create: (context) => MenuAppController(),
+                        ),
+                      ],
+                      child: const HistoryScreen(),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-          DrawerListTile(
-            title: "Profil",
-            svgSrc: "assets/icons/menu_tran.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
-              );
-            },
-          ),
-          DrawerListTile(
-            title: "Notification",
-            svgSrc: "assets/icons/menu_notification.svg",
-            press: () {},
-          ),
-        ],
+                );
+              },
+            ),
+            DrawerListTile(
+              title: "Profil",
+              svgSrc: "assets/icons/menu_tran.svg",
+              selected: ModalRoute.of(context)?.settings.name == '/profil',
+              press: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
+            ),
+            DrawerListTile(
+              title: "Notification",
+              svgSrc: "assets/icons/menu_notification.svg",
+              selected: false,
+              press: () {},
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -105,28 +141,51 @@ class SideMenu extends StatelessWidget {
 class DrawerListTile extends StatelessWidget {
   const DrawerListTile({
     Key? key,
-    // For selecting those three line once press "Command+D"
     required this.title,
     required this.svgSrc,
     required this.press,
+    this.selected = false,
   }) : super(key: key);
 
   final String title, svgSrc;
   final VoidCallback press;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: press,
-      horizontalTitleGap: 0.0,
-      leading: SvgPicture.asset(
-        svgSrc,
-        colorFilter: ColorFilter.mode(Colors.white54, BlendMode.srcIn),
-        height: 16,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.white54),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: selected ? const Color(0x1A3A7D44) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: ListTile(
+          onTap: press,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          leading: Container(
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: SvgPicture.asset(
+              svgSrc,
+              colorFilter: ColorFilter.mode(
+                selected ? Colors.white : const Color(0xFF3A7D44),
+                BlendMode.srcIn,
+              ),
+              height: 20,
+            ),
+          ),
+          title: Text(
+            title,
+            style: TextStyle(
+              color: selected ? const Color(0xFF3A7D44) : Colors.black87,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 15,
+            ),
+          ),
+          horizontalTitleGap: 12,
+        ),
       ),
     );
   }
