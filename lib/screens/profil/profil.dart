@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
+
 import 'package:admin/screens/profil/editprofilpage.dart';
 import 'package:admin/screens/widgets/profile_row.dart';
 import 'package:admin/screens/main/components/side_menu.dart';
 import 'package:admin/screens/dashboard/dashboard_screen.dart';
 
 class ProfilePage extends StatelessWidget {
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
+import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
+import 'package:admin/screens/main/components/side_menu_user.dart';
+
+class ProfilePage extends StatefulWidget {
+
   const ProfilePage({Key? key}) : super(key: key);
 
   static const primaryColor = Color(0xFF2A2D3E);
 
   @override
+
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
@@ -55,6 +66,7 @@ class ProfilePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 48, bottom: 24),
       child: Column(
+
         children: [
           Stack(
             alignment: Alignment.bottomRight,
@@ -267,6 +279,7 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ),
+
     );
   }
 
@@ -309,6 +322,7 @@ class SideMenu extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
             color: const Color(0xFF3A7D44),
             width: double.infinity,
+
             child: Column(
               children: [
                 CircleAvatar(
@@ -316,11 +330,13 @@ class SideMenu extends StatelessWidget {
                   backgroundColor: Colors.white,
                   backgroundImage: const AssetImage("assets/images/profile_pic.png"),
                 ),
+
                 const SizedBox(height: 16),
                 const Text(
                   "Sutan B.R",
                   style: TextStyle(
                     color: Color(0xFF3A7D44),
+
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
@@ -414,6 +430,7 @@ class SideMenu extends StatelessWidget {
           ],
         ),
       ),
+
     );
   }
 }

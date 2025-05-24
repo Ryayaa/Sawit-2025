@@ -1,9 +1,14 @@
+import 'package:admin/models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../../constants.dart';
 import 'forgot_password_screen.dart';
 import '../../controllers/menu_app_controller.dart';
+import 'package:firebase_database/firebase_database.dart';
+import '../../screens/dashboard/dashboard_user.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,31 +29,81 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     super.dispose();
   }
+UserModel? currentUser;
+ Future<void> _login() async {
+  if (_formKey.currentState!.validate()) {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text;
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      if (_usernameController.text == "admin" &&
-          _passwordController.text == "password123") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MultiProvider(
+    // Ubah menjadi format email jika perlu
+    String email = username.contains('@') ? username : '$username@sawit.com';
+
+    try {
+      // Login menggunakan FirebaseAuth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // UID berhasil diambil
+      String uid = userCredential.user?.uid ?? "UID kosong";
+      print("Login berhasil dengan UID: $uid");
+
+      // Ambil role user dari Realtime Database
+      final dbRef = FirebaseDatabase.instance.ref('User');
+      final snapshot = await dbRef.get();
+
+      for (final child in snapshot.children) {
+        final user = Map<String, dynamic>.from(child.value as Map);
+        if (user['email'] == email) {
+          int role = int.tryParse(user['role'].toString()) ?? 0;
+
+          Widget destination;
+
+          if (role == 1) {
+            destination = MultiProvider(
               providers: [
-                ChangeNotifierProvider(
-                  create: (context) => MenuAppController(),
-                ),
+                ChangeNotifierProvider(create: (context) => MenuAppController()),
               ],
-              child: const DashboardScreen(),
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid credentials')),
-        );
+              child: DashboardScreen(),
+            );
+          } else if (role == 2) {
+            destination = MultiProvider(
+              providers: [
+                ChangeNotifierProvider(create: (context) => MenuAppController()),
+              ],
+              child: DashboardUser(),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Role tidak dikenali')),
+            );
+            return;
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => destination),
+          );
+          return;
+        }
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User tidak ditemukan di database')),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Login gagal';
+      if (e.code == 'user-not-found') {
+        message = 'User tidak ditemukan';
+      } else if (e.code == 'wrong-password') {
+        message = 'Password salah';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -8,11 +8,14 @@ import '../../responsive.dart';
 import 'components/header.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
+import '../../services/sensor_service.dart';
 import 'components/recent_measurements_table.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  DashboardScreen({super.key}); // Removed const
+
+  final SensorService _sensorService = SensorService();
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +147,7 @@ class DashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: defaultPadding),
 
+
                       // Modul 1 dengan Card hijau
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -177,6 +181,7 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: defaultPadding),
+
 
                       // Modul 2 dengan Card hijau
                       Padding(

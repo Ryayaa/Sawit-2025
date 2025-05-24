@@ -69,6 +69,7 @@ class SideMenu extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 8),
             DrawerListTile(
               title: "Dashboard",
@@ -119,6 +120,7 @@ class SideMenu extends StatelessWidget {
             const SizedBox(height: 24),
           ],
         ),
+
       ),
     );
   }
