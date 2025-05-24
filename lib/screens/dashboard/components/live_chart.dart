@@ -18,17 +18,23 @@ class LiveChart extends StatelessWidget {
     required this.humidityData,
     this.temperatureLabel = "Temperature",
     this.humidityLabel = "Soil Moisture",
-    this.yInterval = 20, // Interval default untuk sumbu Y
-    this.minY = 20, // Nilai minimum sumbu Y
-    this.maxY = 100, // Nilai maksimum sumbu Y
+    this.yInterval = 20,
+    this.minY = 20,
+    this.maxY = 100,
   });
 
   @override
   Widget build(BuildContext context) {
+    final temperatureValue = temperatureData.isNotEmpty
+        ? temperatureData.last.y.toStringAsFixed(1)
+        : '-';
+
     return Card(
-      color: Colors.blueGrey.shade900,
+      color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 12,
+      shadowColor: Colors.black26,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -37,9 +43,9 @@ class LiveChart extends StatelessWidget {
             Text(
               moduleName,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 12),
@@ -55,11 +61,10 @@ class LiveChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         interval: 1,
-                        reservedSize: 22,
                         getTitlesWidget: (value, _) => Text(
                           value.toInt().toString(),
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 10),
+                              color: Colors.black, fontSize: 10),
                         ),
                       ),
                     ),
@@ -70,7 +75,7 @@ class LiveChart extends StatelessWidget {
                         getTitlesWidget: (value, _) => Text(
                           value.toInt().toString(),
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 10),
+                              color: Colors.black, fontSize: 10),
                         ),
                       ),
                     ),
@@ -81,21 +86,25 @@ class LiveChart extends StatelessWidget {
                   ),
                   borderData: FlBorderData(
                     show: true,
-                    border: Border.all(color: Colors.white24),
+                    border: Border.all(color: Colors.black12),
                   ),
                   lineBarsData: [
                     LineChartBarData(
                       spots: temperatureData,
                       isCurved: true,
-                      color: Colors.blueAccent,
-                      barWidth: 2,
+                      color: null,
+                      gradient: LinearGradient(
+                        colors: [Colors.blueAccent, Colors.lightBlueAccent],
+                      ),
+                      barWidth: 3,
+                      isStrokeCapRound: true,
                       dotData: FlDotData(show: false),
                     ),
                     LineChartBarData(
                       spots: humidityData,
                       isCurved: true,
-                      color: Colors.greenAccent,
                       barWidth: 2,
+                      color: Colors.greenAccent,
                       dotData: FlDotData(show: false),
                     ),
                   ],
@@ -105,11 +114,19 @@ class LiveChart extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
+                const SizedBox(width: 16),
                 _LegendDot(color: Colors.blueAccent, label: temperatureLabel),
                 const SizedBox(width: 16),
                 _LegendDot(color: Colors.greenAccent, label: humidityLabel),
               ],
-            )
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$temperatureLabel: $temperatureValue',
+              style: const TextStyle(
+                color: Colors.black,
+              ),
+            ),
           ],
         ),
       ),
@@ -128,15 +145,15 @@ class _LegendDot extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 10,
           height: 10,
+          width: 10,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-        )
+          style: const TextStyle(color: Colors.black, fontSize: 12),
+        ),
       ],
     );
   }

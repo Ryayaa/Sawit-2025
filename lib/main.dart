@@ -5,7 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 import 'controllers/menu_app_controller.dart';
 import 'screens/auth/login_screen.dart';
+
+import 'screens/profil/profil.dart'; // Pastikan nama file dan folder sesuai
+import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/history/history_screen.dart'; // Pastikan nama file dan folder sesuai
+
 import 'config/firebase_options.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,23 +34,22 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
             .apply(bodyColor: Colors.white),
         canvasColor: secondaryColor,
-        // Add additional theme customization for login elements
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: secondaryColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white24),
+            borderSide: const BorderSide(color: Colors.white24),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white24),
+            borderSide: const BorderSide(color: Colors.white24),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: primaryColor),
+            borderSide: const BorderSide(color: primaryColor),
           ),
-          labelStyle: TextStyle(color: Colors.white70),
+          labelStyle: const TextStyle(color: Colors.white70),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -56,13 +61,18 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
+      routes: {
+        '/dashboard': (context) => const DashboardScreen(),
+        '/profil': (context) => const ProfilePage(),
+        '/history': (context) => const HistoryScreen(),
+        // tambahkan route lain jika ada
+      },
       home: MultiProvider(
         providers: [
           ChangeNotifierProvider(
             create: (context) => MenuAppController(),
           ),
         ],
-        // Change the initial screen to LoginScreen
         child: const LoginScreen(),
       ),
     );

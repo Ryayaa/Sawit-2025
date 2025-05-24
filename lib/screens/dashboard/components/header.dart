@@ -26,7 +26,11 @@ class Header extends StatelessWidget {
         if (!Responsive.isMobile(context))
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black, // pastikan di sini hitam
+            ),
           ),
         const Spacer(), // Replace Expanded(child: SearchField()) with Spacer
         ProfileCard()
@@ -36,125 +40,96 @@ class Header extends StatelessWidget {
 }
 
 class ProfileCard extends StatelessWidget {
-  const ProfileCard({
-    Key? key,
-  }) : super(key: key);
+  const ProfileCard({Key? key}) : super(key: key);
 
- @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        ),
-      );
-    },
-    child: Container(
-      margin: EdgeInsets.only(left: defaultPadding),
-      padding: EdgeInsets.symmetric(
-        horizontal: defaultPadding,
-        vertical: defaultPadding / 2,
-      ),
-      decoration: BoxDecoration(
-        color: secondaryColor,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: PopupMenuButton<String>(
-        onSelected: (value) {
-          if (value == 'profile') {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    ProfilePage(),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-              ),
-            );
-          } else if (value == 'logout') {
-            // Handle logout
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Konfirmasi Logout'),
-                  content: const Text('Apakah Anda yakin ingin keluar?'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Batal'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context); // Close dialog
-                        Navigator.pushReplacementNamed(
-                            context, '/'); // Go to login
-                      },
-                      child: const Text('Logout'),
-                    ),
-                  ],
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == 'profile') {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
                 );
               },
-            );
-          }
-        },
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
-            value: 'profile',
-            child: Row(
-              children: [
-                const Icon(Icons.person_outline),
-                const SizedBox(width: 8),
-                const Text('Profile'),
-              ],
             ),
+          );
+        } else if (value == 'logout') {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Konfirmasi Logout'),
+                content: const Text('Apakah Anda yakin ingin keluar?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Batal'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/');
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'profile',
+          child: Row(
+            children: [
+              const Icon(Icons.person_outline),
+              const SizedBox(width: 8),
+              const Text('Profile'),
+            ],
           ),
-          const PopupMenuDivider(),
-          PopupMenuItem<String>(
-            value: 'logout',
-            child: Row(
-              children: [
-                const Icon(Icons.logout),
-                const SizedBox(width: 8),
-                const Text('Logout'),
-              ],
-            ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'logout',
+          child: Row(
+            children: [
+              const Icon(Icons.logout),
+              const SizedBox(width: 8),
+              const Text('Logout'),
+            ],
           ),
-        ],
-        child: Row(
-          children: [
-            Image.asset(
-              "assets/images/profile_pic.png",
-              height: 38,
+        ),
+      ],
+      child: Container(
+        margin: EdgeInsets.only(left: defaultPadding),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-            if (!Responsive.isMobile(context))
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-                child: Text("Angelina Jolie"),
-              ),
-            const Icon(Icons.keyboard_arrow_down),
           ],
         ),
+        child: CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.white,
+          child: CircleAvatar(
+            radius: 21,
+            backgroundImage: AssetImage("assets/images/profile_pic.png"),
+            backgroundColor: Colors.grey[200],
+          ),
+        ),
       ),
-    )
-  );
-  
-
+    );
   }
 }
 class SearchField extends StatelessWidget {
