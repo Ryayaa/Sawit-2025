@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
-
-import 'package:admin/screens/profil/editprofilpage.dart';
-import 'package:admin/screens/widgets/profile_row.dart';
-import 'package:admin/screens/main/components/side_menu.dart';
-import 'package:admin/screens/dashboard/dashboard_screen.dart';
-
-class ProfilePage extends StatelessWidget {
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
-import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
+import 'package:admin/screens/profil/editprofilpage.dart';
+import 'package:admin/screens/widgets/profile_row.dart';
 import 'package:admin/screens/main/components/side_menu_user.dart';
 
 class ProfilePage extends StatefulWidget {
-
   const ProfilePage({Key? key}) : super(key: key);
 
   static const primaryColor = Color(0xFF2A2D3E);
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
+class _ProfilePageState extends State<ProfilePage> {
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
@@ -35,7 +30,8 @@ class ProfilePage extends StatefulWidget {
           elevation: 0,
           automaticallyImplyLeading: false, // <-- Supaya leading custom tampil
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3A7D44)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF3A7D44)),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
@@ -66,7 +62,6 @@ class ProfilePage extends StatefulWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 48, bottom: 24),
       child: Column(
-
         children: [
           Stack(
             alignment: Alignment.bottomRight,
@@ -74,8 +69,10 @@ class ProfilePage extends StatefulWidget {
               CircleAvatar(
                 radius: 48,
                 backgroundColor: Colors.white,
-                backgroundImage: const AssetImage("assets/images/profile_pic.png"),
-                child: const Icon(Icons.person, size: 48, color: Color(0xFF3A7D44)),
+                backgroundImage:
+                    const AssetImage("assets/images/profile_pic.png"),
+                child: const Icon(Icons.person,
+                    size: 48, color: Color(0xFF3A7D44)),
               ),
               Positioned(
                 bottom: 4,
@@ -88,10 +85,13 @@ class ProfilePage extends StatefulWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 4)
+                      ],
                     ),
                     padding: const EdgeInsets.all(4),
-                    child: const Icon(Icons.camera_alt, size: 18, color: Color(0xFFF27329)),
+                    child: const Icon(Icons.camera_alt,
+                        size: 18, color: Color(0xFFF27329)),
                   ),
                 ),
               ),
@@ -118,7 +118,10 @@ class ProfilePage extends StatefulWidget {
                 ),
                 child: const Text(
                   "Verified",
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -152,21 +155,30 @@ class ProfilePage extends StatefulWidget {
             // Email
             Row(
               children: [
-                Icon(Icons.email_outlined, color: Colors.blueGrey[400], size: 22),
+                Icon(Icons.email_outlined,
+                    color: Colors.blueGrey[400], size: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Email", style: TextStyle(fontSize: 11, color: Colors.black54)),
-                      Text("sutan@email.com", style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
+                      const Text("Email",
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.black54)),
+                      Text("sutan@email.com",
+                          style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
                 TextButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.edit, size: 16, color: Color(0xFFF27329)),
-                  label: const Text("CHANGE", style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
+                  icon: const Icon(Icons.edit,
+                      size: 16, color: Color(0xFFF27329)),
+                  label: const Text("CHANGE",
+                      style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
                   style: TextButton.styleFrom(
                     minimumSize: Size(0, 32),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -178,14 +190,21 @@ class ProfilePage extends StatefulWidget {
             // No HP
             Row(
               children: [
-                Icon(Icons.phone_android, color: Colors.blueGrey[400], size: 22),
+                Icon(Icons.phone_android,
+                    color: Colors.blueGrey[400], size: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("No HP", style: TextStyle(fontSize: 11, color: Colors.black54)),
-                      Text("089680510618", style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
+                      const Text("No HP",
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.black54)),
+                      Text("089680510618",
+                          style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
@@ -196,16 +215,22 @@ class ProfilePage extends StatefulWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.home_outlined, color: Colors.blueGrey[400], size: 22),
+                Icon(Icons.home_outlined,
+                    color: Colors.blueGrey[400], size: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Alamat", style: TextStyle(fontSize: 11, color: Colors.black54)),
+                      const Text("Alamat",
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.black54)),
                       Text(
                         "Jl. Sungai Andai Komplek Herlina Perkasa",
-                        style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -222,15 +247,23 @@ class ProfilePage extends StatefulWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Password", style: TextStyle(fontSize: 11, color: Colors.black54)),
-                      const Text("********", style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500)),
+                      const Text("Password",
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.black54)),
+                      const Text("********",
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
                 TextButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.edit, size: 16, color: Color(0xFFF27329)),
-                  label: const Text("CHANGE", style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
+                  icon: const Icon(Icons.edit,
+                      size: 16, color: Color(0xFFF27329)),
+                  label: const Text("CHANGE",
+                      style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
                   style: TextButton.styleFrom(
                     minimumSize: Size(0, 32),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -244,16 +277,20 @@ class ProfilePage extends StatefulWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const EditProfilPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const EditProfilPage()),
                   );
                 },
                 icon: const Icon(Icons.edit, size: 18),
-                label: const Text('Edit Profil', style: TextStyle(fontSize: 15)),
+                label:
+                    const Text('Edit Profil', style: TextStyle(fontSize: 15)),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
                   backgroundColor: const Color(0xFF3A7D44),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24)),
                   elevation: 2,
                 ),
               ),
@@ -279,7 +316,6 @@ class ProfilePage extends StatefulWidget {
           ],
         ),
       ),
-
     );
   }
 
@@ -300,11 +336,17 @@ class ProfilePage extends StatefulWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-            Icon(icon, color: active ? const Color(0xFFF27329) : Colors.grey, size: 26),
+            Icon(icon,
+                color: active ? const Color(0xFFF27329) : Colors.grey,
+                size: 26),
           ],
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(color: active ? const Color(0xFFF27329) : Colors.grey, fontSize: 12, fontWeight: active ? FontWeight.bold : FontWeight.normal)),
+        Text(label,
+            style: TextStyle(
+                color: active ? const Color(0xFFF27329) : Colors.grey,
+                fontSize: 12,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal)),
       ],
     );
   }
@@ -322,21 +364,19 @@ class SideMenu extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
             color: const Color(0xFF3A7D44),
             width: double.infinity,
-
             child: Column(
               children: [
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  backgroundImage: const AssetImage("assets/images/profile_pic.png"),
+                  backgroundImage:
+                      const AssetImage("assets/images/profile_pic.png"),
                 ),
-
                 const SizedBox(height: 16),
                 const Text(
                   "Sutan B.R",
                   style: TextStyle(
                     color: Color(0xFF3A7D44),
-
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
@@ -374,8 +414,10 @@ class SideMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildDrawerItem(context, title: "Settings", icon: Icons.settings, routeName: '/settings'),
-          _buildDrawerItem(context, title: "Help", icon: Icons.help, routeName: '/help'),
+          _buildDrawerItem(context,
+              title: "Settings", icon: Icons.settings, routeName: '/settings'),
+          _buildDrawerItem(context,
+              title: "Help", icon: Icons.help, routeName: '/help'),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -399,25 +441,34 @@ class SideMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, {required String title, required IconData icon, required String routeName, bool isSelected = false}) {
+  Widget _buildDrawerItem(BuildContext context,
+      {required String title,
+      required IconData icon,
+      required String routeName,
+      bool isSelected = false}) {
     return InkWell(
       onTap: () {
         if (ModalRoute.of(context)?.settings.name != routeName) {
           Navigator.pushNamed(context, routeName);
         } else {
-          Navigator.pop(context); // hanya tutup drawer jika sudah di halaman itu
+          Navigator.pop(
+              context); // hanya tutup drawer jika sudah di halaman itu
         }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF27329).withOpacity(0.2) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFFF27329).withOpacity(0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFFF27329) : Colors.black54, size: 20),
+            Icon(icon,
+                color: isSelected ? const Color(0xFFF27329) : Colors.black54,
+                size: 20),
             const SizedBox(width: 16),
             Text(
               title,
@@ -430,8 +481,6 @@ class SideMenu extends StatelessWidget {
           ],
         ),
       ),
-
     );
   }
 }
-

@@ -5,20 +5,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 import 'controllers/menu_app_controller.dart';
 import 'screens/auth/login_screen.dart';
-
-import 'screens/profil/profil.dart'; // Pastikan nama file dan folder sesuai
+import 'screens/profil/profil.dart';
 import 'screens/dashboard/dashboard_screen.dart';
-import 'screens/history/history_screen.dart'; // Pastikan nama file dan folder sesuai
-
+import 'screens/history/history_screen.dart';
 import 'config/firebase_options.dart';
 
-
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    runApp(const MyApp());
+  } catch (e) {
+    print('Error initializing app: $e');
+    // Handle initialization error appropriately
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -26,55 +28,76 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Sawit Management System',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: bgColor,
-        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
-            .apply(bodyColor: Colors.white),
-        canvasColor: secondaryColor,
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: secondaryColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white24),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white24),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: primaryColor),
-          ),
-          labelStyle: const TextStyle(color: Colors.white70),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => MenuAppController(),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ),
-      routes: {
-        '/dashboard': (context) => const DashboardScreen(),
-        '/profil': (context) => const ProfilePage(),
-        '/history': (context) => const HistoryScreen(),
-        // tambahkan route lain jika ada
-      },
-      home: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (context) => MenuAppController(),
-          ),
-        ],
-        child: const LoginScreen(),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Sawit Management System',
+        theme: _buildTheme(context),
+        initialRoute: '/',
+        routes: _buildRoutes(),
       ),
     );
+  }
+
+  ThemeData _buildTheme(BuildContext context) {
+    return ThemeData.dark().copyWith(
+      scaffoldBackgroundColor: bgColor,
+      textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+          .apply(bodyColor: Colors.white),
+      canvasColor: secondaryColor,
+      inputDecorationTheme: _buildInputDecorationTheme(),
+      elevatedButtonTheme: _buildElevatedButtonTheme(),
+    );
+  }
+
+  InputDecorationTheme _buildInputDecorationTheme() {
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: secondaryColor,
+      border: _buildDefaultBorder(),
+      enabledBorder: _buildDefaultBorder(),
+      focusedBorder: _buildFocusedBorder(),
+      labelStyle: const TextStyle(color: Colors.white70),
+    );
+  }
+
+  OutlineInputBorder _buildDefaultBorder() {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Colors.white24),
+    );
+  }
+
+  OutlineInputBorder _buildFocusedBorder() {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: primaryColor),
+    );
+  }
+
+  ElevatedButtonThemeData _buildElevatedButtonTheme() {
+    return ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  Map<String, Widget Function(BuildContext)> _buildRoutes() {
+    return {
+      '/': (context) => const LoginScreen(),
+      '/dashboard': (context) => DashboardScreen(),
+      '/profil': (context) => const ProfilePage(),
+      '/history': (context) => const HistoryScreen(),
+    };
   }
 }
