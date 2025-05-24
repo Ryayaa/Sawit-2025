@@ -18,11 +18,11 @@ class ProfilePage extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        drawer: const SideMenu(),
+        drawer: const SideMenu(), // <--- INI YANG MEMUNCULKAN DRAWER DI PROFIL
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
-          automaticallyImplyLeading: false,
+          automaticallyImplyLeading: false, // <-- Supaya leading custom tampil
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3A7D44)),
             onPressed: () => Navigator.pop(context),
@@ -418,8 +418,3 @@ class SideMenu extends StatelessWidget {
   }
 }
 
-// Pastikan di MaterialApp kamu:
-final Map<String, WidgetBuilder> routes = {
-  '/profil': (context) => const ProfilePage(),
-  // ...route lain...
-};

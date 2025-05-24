@@ -3,8 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:admin/screens/profil/profil.dart';
 import '../../../screens/history/history_screen.dart';
 import '../../../screens/dashboard/dashboard_screen.dart';
-import 'package:provider/provider.dart';
-import '../../../controllers/menu_app_controller.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({Key? key}) : super(key: key);
@@ -16,7 +14,7 @@ class SideMenu extends StatelessWidget {
         borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
       ),
       child: Container(
-        color: const Color(0xFFF5F6FA), // ganti dari Colors.white ke warna soft
+        color: const Color(0xFFF5F6FA),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -33,7 +31,6 @@ class SideMenu extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Tambahkan gradient & shadow pada avatar/logo
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -76,57 +73,46 @@ class SideMenu extends StatelessWidget {
             DrawerListTile(
               title: "Dashboard",
               svgSrc: "assets/icons/menu_dashboard.svg",
+              routeName: '/dashboard',
               selected: ModalRoute.of(context)?.settings.name == '/dashboard',
               press: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MultiProvider(
-                      providers: [
-                        ChangeNotifierProvider(
-                          create: (context) => MenuAppController(),
-                        ),
-                      ],
-                      child: const DashboardScreen(),
-                    ),
-                  ),
-                );
+                if (ModalRoute.of(context)?.settings.name != '/dashboard') {
+                  Navigator.pushReplacementNamed(context, '/dashboard');
+                } else {
+                  Navigator.pop(context);
+                }
               },
             ),
             DrawerListTile(
               title: "Log History",
               svgSrc: "assets/icons/menu_doc.svg",
+              routeName: '/history',
               selected: ModalRoute.of(context)?.settings.name == '/history',
               press: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MultiProvider(
-                      providers: [
-                        ChangeNotifierProvider(
-                          create: (context) => MenuAppController(),
-                        ),
-                      ],
-                      child: const HistoryScreen(),
-                    ),
-                  ),
-                );
+                if (ModalRoute.of(context)?.settings.name != '/history') {
+                  Navigator.pushNamed(context, '/history');
+                } else {
+                  Navigator.pop(context);
+                }
               },
             ),
             DrawerListTile(
               title: "Profil",
               svgSrc: "assets/icons/menu_tran.svg",
+              routeName: '/profil',
               selected: ModalRoute.of(context)?.settings.name == '/profil',
               press: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
+                if (ModalRoute.of(context)?.settings.name != '/profil') {
+                  Navigator.pushNamed(context, '/profil'); // <-- INI YANG BENAR!
+                } else {
+                  Navigator.pop(context);
+                }
               },
             ),
             DrawerListTile(
               title: "Notification",
               svgSrc: "assets/icons/menu_notification.svg",
+              routeName: '',
               selected: false,
               press: () {},
             ),
@@ -144,10 +130,11 @@ class DrawerListTile extends StatelessWidget {
     required this.title,
     required this.svgSrc,
     required this.press,
+    required this.routeName,
     this.selected = false,
   }) : super(key: key);
 
-  final String title, svgSrc;
+  final String title, svgSrc, routeName;
   final VoidCallback press;
   final bool selected;
 
