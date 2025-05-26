@@ -1,0 +1,251 @@
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+#include <DHT.h>
+#include <addons/TokenHelper.h>
+#include <addons/RTDBHelper.h>
+#include <TinyGPSPlus.h>
+#include <SPI.h>
+#include <LoRa.h>
+#include <WiFiClientSecure.h>
+
+// WiFi credentials
+#define WIFI_SSID "Eka Helda"
+#define WIFI_PASSWORD "banjarmasin970"
+
+// Firebase credentials
+#define API_KEY "AIzaSyC7j6TD3DWXq-gf_NE4r72JoK1wSRmPkU4"
+#define DATABASE_URL "https://sawit-iot-default-rtdb.asia-southeast1.firebasedatabase.app"
+
+// Sensor
+#define DHT_PIN 4
+#define SOIL_PIN 34
+#define DHT_TYPE DHT22
+#define SOIL_MOISTURE_AIR 3500
+#define SOIL_MOISTURE_WATER 1500
+
+DHT dht(DHT_PIN, DHT_TYPE);
+
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+String moduleId = "module1";
+
+// GPS
+#define GPS_RX 16
+#define GPS_TX 17
+HardwareSerial gpsSerial(2);
+TinyGPSPlus gps;
+
+// LoRa Pin Definition
+#define LORA_SCK     18
+#define LORA_MISO    19
+#define LORA_MOSI    23
+#define LORA_SS      5
+#define LORA_RST     14
+#define LORA_DIO0    26
+
+// Add these root certificate
+const char* ROOT_CA = \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIFVzCCAz+gAwIBAgINAgPlk28xsBNJiGuiFzANBgkqhkiG9w0BAQwFADBHMQsw\n" \
+"CQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZpY2VzIExMQzEU\n" \
+"MBIGA1UEAxMLR1RTIFJvb3QgUjEwHhcNMTYwNjIyMDAwMDAwWhcNMzYwNjIyMDAw\n" \
+"MDAwWjBHMQswCQYDVQQGEwJVUzEiMCAGA1UEChMZR29vZ2xlIFRydXN0IFNlcnZp\n" \
+"Y2VzIExMQzEUMBIGA1UEAxMLR1RTIFJvb3QgUjEwggIiMA0GCSqGSIb3DQEBAQUA\n" \
+"A4ICDwAwggIKAoICAQC2EQKLHuOhd5s73L+UPreVp0A8of2C+X0yBoJx9vaMf/vo\n" \
+"27xqLpeXo4xL+Sv2sfnOhB2x+cWX3u+58qPpvBKJXqeqUqv4IyfLpLGcY9vXmX7w\n" \
+"Cl7raKb0xlpHDU0QM+NOsROjyBhsS+z8CZDfnWQpJSMHobTSPS5g4M/SCYe7zUjw\n" \
+"TcLCeoiKu7rPWRnWr4+wB7CeMfGCwcDfLqZtbBkOtdh+JhpFAz2weaSUKK0Pfybl\n" \
+"qAj+lug8aJRT7oM6iCsVlgmy4HqMLnXWnOunVmSPlk9orj2XwoSPwLxAwAtcvfaH\n" \
+"guPz2WnCE4Wj6JgA7nv/5aGjxYSqBQF1L4c58fRLLxNZ8A0UBCQrH+4L0PcZ9ERH\n" \
+"CpOF7qPePQKxKR4FH6EI6/dJzMr2M76oALInXL+hZynj0Yv+3xnlPpyGZyLHHhQE\n" \
+"N9drumG/A4T5QKa0A5IrxLQvdYy3pFGk0JqB1ihHvJ+7VqyzR6YV0buXA1GXV1n+\n" \
+"oAOU6GKBzH1JC6kKavDFbe8HQjuR6H5swQ43lKvLY4FmvHhwPdqgvpWOT2cXGJj2\n" \
+"MhB+5A1Y+VpwHH4CeCD/Q4Y5mXEIZkEfDwwEvZT/wYvxhRYL9RsFZ+8Okn0tHyZB\n" \
+"aSbKE/fQwAGXRWJF3l0HOQ6oIJZ2HzaNRnUwm2wjH6MbHKJApl+dqEfy1kU5T/Fu\n" \
+"mIYAAAABAAE=\n" \
+"-----END CERTIFICATE-----\n";
+
+#define WIFI_TIMEOUT_MS 20000 // 20 second WiFi connection timeout
+#define WIFI_RECOVER_TIME_MS 10000 // Wait 10 seconds after a failed connection
+
+void setup() {
+  Serial.begin(115200);
+
+  dht.begin();
+  pinMode(SOIL_PIN, INPUT);
+  gpsSerial.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);
+  Serial.println("GPS module initialized");
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi");
+  
+  unsigned long startAttemptTime = millis();
+  
+  while (WiFi.status() != WL_CONNECTED && 
+         millis() - startAttemptTime < WIFI_TIMEOUT_MS) {
+    Serial.print(".");
+    delay(500);
+  }
+  
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("\nFailed to connect to WiFi. Restarting...");
+    ESP.restart();
+  }
+  
+  Serial.println("\nConnected to WiFi");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Configure Firebase
+  config.api_key = API_KEY;
+  config.database_url = DATABASE_URL;
+  
+  // Add certificate
+  config.cert.data = ROOT_CA;
+  
+  // Begin Firebase connection
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+  
+  // Set timeouts correctly using the proper methods
+  fbdo.streamTimeout(60, 1000); // 60 seconds timeout
+  fbdo.setResponseSize(2048);   // Set response size limit
+  
+  // Set database read timeout to 1 minute
+  Firebase.setReadTimeout(fbdo, 1000 * 60);
+  // Set database write timeout to 30 seconds
+  Firebase.setwriteSizeLimit(fbdo, "tiny");
+  
+  // LoRa
+  SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+  LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+  if (!LoRa.begin(433E6)) {
+    Serial.println("❌ LoRa init failed. Check wiring!");
+    while (true);
+  }
+  Serial.println("✅ LoRa initialized");
+}
+
+int getSoilMoisturePercent() {
+  int soilValue = analogRead(SOIL_PIN);
+  int percent = map(soilValue, SOIL_MOISTURE_AIR, SOIL_MOISTURE_WATER, 0, 100);
+  return constrain(percent, 0, 100);
+}
+
+bool readGPS(float &latitude, float &longitude, String &gpsTime) {
+  while (gpsSerial.available()) {
+    gps.encode(gpsSerial.read());
+  }
+
+  if (gps.location.isValid() && gps.time.isValid()) {
+    latitude = gps.location.lat();
+    longitude = gps.location.lng();
+    char timeBuffer[10];
+    sprintf(timeBuffer, "%02d:%02d:%02d", gps.time.hour(), gps.time.minute(), gps.time.second());
+    gpsTime = String(timeBuffer);
+    return true;
+  }
+
+  return false;
+}
+
+// GANTI bagian dalam loop() Anda dengan ini:
+
+void loop() {
+  if (Firebase.ready() && WiFi.status() == WL_CONNECTED) {
+    // ======= LoRa Receiver =========
+    if (LoRa.parsePacket()) {
+      String receivedData = "";
+      while (LoRa.available()) {
+        receivedData += (char)LoRa.read();
+      }
+      Serial.println("📡 Received from LoRa: " + receivedData);
+
+      FirebaseJson jsonLoRa;
+      FirebaseJsonData jsonData;
+
+      if (jsonLoRa.setJsonData(receivedData)) {
+        if (jsonLoRa.get(jsonData, "moduleId")) {
+          String senderModuleId = jsonData.stringValue;
+
+          if (senderModuleId != moduleId) {
+            jsonLoRa.set("timestamp/.sv", "timestamp");
+
+            // Simpan data ke readings
+            String path = "/" + senderModuleId + "/readings";
+            if (Firebase.RTDB.pushJSON(&fbdo, path.c_str(), &jsonLoRa)) {
+              Serial.println("✅ LoRa readings pushed to Firebase");
+            } else {
+              Serial.println("❌ Failed to push LoRa readings: " + fbdo.errorReason());
+            }
+          }
+        } else {
+          Serial.println("⚠️ 'moduleId' not found in JSON");
+        }
+      } else {
+        Serial.println("⚠️ Invalid LoRa JSON format");
+      }
+    }
+
+    // ======= Local Sensor Read ========
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
+    int soilMoisture = getSoilMoisturePercent();
+
+    if (isnan(temperature) || isnan(humidity)) {
+      Serial.println("❌ Failed to read from DHT sensor!");
+      return;
+    }
+
+    float latitude = 0.0, longitude = 0.0;
+    String gpsTime = "N/A";
+    bool gpsAvailable = readGPS(latitude, longitude, gpsTime);
+
+    // === readings data ===
+    FirebaseJson readingsData;
+    readingsData.set("temperature", temperature);
+    readingsData.set("humidity", humidity);
+    readingsData.set("soilMoisture", soilMoisture);
+    readingsData.set("timestamp/.sv", "timestamp");
+
+    String readingsPath = "/" + moduleId + "/readings";
+    if (Firebase.RTDB.pushJSON(&fbdo, readingsPath.c_str(), &readingsData)) {
+      Serial.println("✅ Sensor readings pushed to Firebase");
+    } else {
+      Serial.println("❌ Firebase Error: " + fbdo.errorReason());
+      Serial.println("⚠️ Reconnecting to Firebase...");
+      Firebase.reconnectWiFi(true);
+    }
+
+    // === latest_gps data ===
+    if (gpsAvailable) {
+      FirebaseJson gpsData;
+      gpsData.set("latitude", latitude);
+      gpsData.set("longitude", longitude);
+      gpsData.set("last_update/.sv", "timestamp");
+
+      String gpsPath = "/" + moduleId + "/latest_gps";
+      if (Firebase.RTDB.setJSON(&fbdo, gpsPath.c_str(), &gpsData)) {
+        Serial.println("✅ GPS data updated to latest_gps");
+      } else {
+        Serial.println("❌ Failed to update GPS data: " + fbdo.errorReason());
+      }
+
+      Serial.printf("GPS -> Lat: %.6f | Lng: %.6f | Time: %s\n", latitude, longitude, gpsTime.c_str());
+    } else {
+      Serial.println("⚠️ GPS data not valid yet...");
+    }
+
+    Serial.printf("Temp: %.2f°C | Humidity: %.2f%% | Soil: %d%%\n", temperature, humidity, soilMoisture);
+
+    delay(10000);
+  } else {
+    Serial.println("❌ Firebase or WiFi not ready. Reconnecting...");
+    if (WiFi.status() != WL_CONNECTED) {
+      WiFi.reconnect();
+    }
+    delay(1000);
+  }
+}

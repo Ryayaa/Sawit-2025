@@ -1,20 +1,41 @@
 {
   "module1": {
-    "temperature": 0,
-    "humidity": 0,
-    "soilMoisture": 0,
-    "timestamp": 0
+    "readings": {
+      "-timestamp1": {
+        "temperature": 28.5,
+        "humidity": 65.0,
+        "soilMoisture": 75.0,
+        "timestamp": 1714147200000,
+        "gps": {
+          "latitude": -6.123456,
+          "longitude": 106.789012
+        }
+      }
+    },
+    "latest_gps": {
+      "latitude": -6.123456,
+      "longitude": 106.789012,
+      "last_update": 1714147200000
+    }
   },
   "module2": {
-    "temperature": 0,
-    "humidity": 0,
-    "soilMoisture": 0,
-    "timestamp": 0
+    "readings": {
+      "-timestamp1": {
+        "temperature": 29.0,
+        "humidity": 68.0,
+        "soilMoisture": 70.0,
+        "timestamp": 1714147200000
+      }
+    }
   },
   "module3": {
-    "temperature": 0,
-    "humidity": 0,
-    "soilMoisture": 0,
-    "timestamp": 0
+    "readings": {
+      "-timestamp1": {
+        "temperature": 27.5,
+        "humidity": 70.0,
+        "soilMoisture": 80.0,
+        "timestamp": 1714147200000
+      }
+    }
   }
 }

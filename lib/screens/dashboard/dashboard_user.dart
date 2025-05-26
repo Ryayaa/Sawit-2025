@@ -1,20 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../main/components/side_menu_user.dart';
 import 'package:provider/provider.dart';
+import '../main/components/side_menu_user.dart';
 import '../../controllers/menu_app_controller.dart';
 import '../../constants.dart';
 import '../../responsive.dart';
+import '../../services/firebase_service.dart';
+import '../../models/sensor_reading.dart';
 import 'components/header.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
-import '../../services/sensor_service.dart';
 import 'components/recent_measurements_table.dart';
 
-class DashboardUser extends StatelessWidget {
-  DashboardUser({super.key}); // Removed const
+class DashboardUser extends StatefulWidget {
+  const DashboardUser({super.key});
 
-  final SensorService _sensorService = SensorService();
+  @override
+  State<DashboardUser> createState() => _DashboardUserState();
+}
+
+class _DashboardUserState extends State<DashboardUser> {
+  final FirebaseService _firebaseService = FirebaseService();
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,84 +72,95 @@ class DashboardUser extends StatelessWidget {
                     const SizedBox(height: defaultPadding),
 
                     // Modul 1
-                    StreamBuilder<Map<String, dynamic>>(
-                        stream: _sensorService.getLiveModuleData('module1'),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          }
-
-                          if (!snapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          final data = snapshot.data!;
-                          return LiveChart(
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Card(
+                        color: const Color(0xFFF5F6FA),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: LiveChart(
                             moduleName: 'Modul 1',
-                            temperatureData: [
-                              FlSpot(0, data['temperature']?.toDouble() ?? 0),
-                            ],
-                            humidityData: [
-                              FlSpot(0, data['humidity']?.toDouble() ?? 0),
-                            ],
-                            temperatureLabel: 'Suhu (°C)',
-                            humidityLabel: 'Kelembapan (%)',
-                            yInterval: 10,
-                          );
-                        }),
+                            dataStream:
+                                _firebaseService.getModuleData('module1'),
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: defaultPadding),
 
                     // Modul 2
-                    LiveChart(
-                      moduleName: 'Modul 2',
-                      temperatureData: [
-                        FlSpot(0, 29),
-                        FlSpot(1, 30),
-                        FlSpot(2, 28),
-                        FlSpot(3, 27.5),
-                      ],
-                      humidityData: [
-                        FlSpot(0, 65),
-                        FlSpot(1, 66),
-                        FlSpot(2, 67),
-                        FlSpot(3, 68),
-                      ],
-                      temperatureLabel: 'Suhu (°C)',
-                      humidityLabel: 'Kelembapan (%)',
-                      yInterval: 10,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Card(
+                        color: const Color(0xFFF5F6FA),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: LiveChart(
+                            moduleName: 'Modul 2',
+                            dataStream:
+                                _firebaseService.getModuleData('module2'),
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: defaultPadding),
 
                     // Modul 3
-                    LiveChart(
-                      moduleName: 'Modul 3',
-                      temperatureData: [
-                        FlSpot(0, 26),
-                        FlSpot(1, 27),
-                        FlSpot(2, 27.5),
-                        FlSpot(3, 28),
-                      ],
-                      humidityData: [
-                        FlSpot(0, 70),
-                        FlSpot(1, 69),
-                        FlSpot(2, 68),
-                        FlSpot(3, 67),
-                      ],
-                      temperatureLabel: 'Suhu (°C)',
-                      humidityLabel: 'Kelembapan (%)',
-                      yInterval: 10,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Card(
+                        color: const Color(0xFFF5F6FA),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: LiveChart(
+                            moduleName: 'Modul 3',
+                            dataStream:
+                                _firebaseService.getModuleData('module3'),
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: defaultPadding),
 
                     // Tabel data terbaru
-                    RecentMeasurementsTable(
-                      initialMeasurements: [
-                        {'module': 1, 'temperature': 30, 'soilMoisture': 68},
-                        {'module': 2, 'temperature': 29, 'soilMoisture': 71},
-                        {'module': 3, 'temperature': 28, 'soilMoisture': 69},
-                      ],
+                    StreamBuilder<Map<String, List<SensorReading>>>(
+                      stream: _firebaseService.getAllModulesData(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        if (!snapshot.hasData) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        final allData = snapshot.data!;
+                        final measurements = allData.entries.map((e) {
+                          final lastReading = e.value.last;
+                          return {
+                            'module': int.parse(e.key.replaceAll('module', '')),
+                            'temperature': lastReading.temperature,
+                            'soilMoisture': lastReading.soilMoisture,
+                          };
+                        }).toList();
+
+                        return RecentMeasurementsTable(
+                          initialMeasurements: measurements,
+                        );
+                      },
                     ),
                     const SizedBox(height: defaultPadding),
 
