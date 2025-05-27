@@ -69,7 +69,6 @@ class SideMenu extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 8),
             DrawerListTile(
               title: "Dashboard",
@@ -104,7 +103,8 @@ class SideMenu extends StatelessWidget {
               selected: ModalRoute.of(context)?.settings.name == '/profil',
               press: () {
                 if (ModalRoute.of(context)?.settings.name != '/profil') {
-                  Navigator.pushNamed(context, '/profil'); // <-- INI YANG BENAR!
+                  Navigator.pushNamed(
+                      context, '/profil'); // <-- INI YANG BENAR!
                 } else {
                   Navigator.pop(context);
                 }
@@ -113,14 +113,20 @@ class SideMenu extends StatelessWidget {
             DrawerListTile(
               title: "Notification",
               svgSrc: "assets/icons/menu_notification.svg",
-              routeName: '',
-              selected: false,
-              press: () {},
+              routeName: '/notification',
+              selected:
+                  ModalRoute.of(context)?.settings.name == '/notification',
+              press: () {
+                if (ModalRoute.of(context)?.settings.name != '/notification') {
+                  Navigator.pushNamed(context, '/notification');
+                } else {
+                  Navigator.pop(context);
+                }
+              },
             ),
             const SizedBox(height: 24),
           ],
         ),
-
       ),
     );
   }
@@ -149,10 +155,12 @@ class DrawerListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: ListTile(
           onTap: press,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: Container(
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
+              color:
+                  selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
               shape: BoxShape.circle,
             ),
             padding: const EdgeInsets.all(8),

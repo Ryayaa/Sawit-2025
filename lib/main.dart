@@ -8,6 +8,7 @@ import 'screens/auth/login_screen.dart';
 import 'screens/profil/profil.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/history/history_screen.dart';
+import 'screens/notification/notification_settings_screen.dart';
 import 'config/firebase_options.dart';
 
 Future<void> main() async {
@@ -98,6 +99,7 @@ class MyApp extends StatelessWidget {
       '/dashboard': (context) => DashboardScreen(),
       '/profil': (context) => const ProfilePage(),
       '/history': (context) => const HistoryScreen(),
+      '/notification': (context) => const NotificationSettingsScreen(),
     };
   }
 }
