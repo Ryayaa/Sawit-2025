@@ -1,5 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/sensor_reading.dart';
+import '../../models/gps_coordinate.dart';
 
 class FirebaseService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
@@ -95,6 +99,26 @@ class FirebaseService {
       });
 
       return abnormalModules;
+    });
+  }
+
+  Stream<GPSCoordinate> getModule1Location() {
+    return FirebaseDatabase.instance
+        .ref()
+        .child('module1/latest_gps')
+        .onValue
+        .map((event) {
+      final data = event.snapshot.value;
+
+      // Tambahkan pengecekan null
+      if (data == null) {
+        throw Exception('GPS data not found');
+      }
+
+      // Konversi data ke Map<String, dynamic>
+      final map = Map<String, dynamic>.from(data as Map);
+
+      return GPSCoordinate.fromMap(map);
     });
   }
 }
