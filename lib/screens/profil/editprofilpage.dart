@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const EditProfilApp());
 }
 
@@ -32,18 +37,52 @@ class EditProfilPage extends StatefulWidget {
 class _EditProfilPageState extends State<EditProfilPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _namaController = TextEditingController(text: 'Sutan B.R');
-  final TextEditingController _emailController = TextEditingController(text: 'sutan***@gmail.com');
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController(text: '*************');
-  final TextEditingController _telpController = TextEditingController(text: '089680510618');
-  final TextEditingController _alamatController = TextEditingController(text: 'Jl. Sungai Andai Komplek Herlina Perkasa');
+  final TextEditingController _nomor_teleponController = TextEditingController();
+  final TextEditingController _alamatController = TextEditingController();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  String uid = '';
+  String displayName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+  User? user = _auth.currentUser;
+
+  if (user != null) {
+    uid = user.uid;
+    final doc = await _firestore.collection('users').doc(uid).get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        _nameController.text = data['name'] ?? ''; // ganti ke 'name'
+        _emailController.text = user.email ?? '';
+        _nomor_teleponController.text = data['nomor_telepon'] ?? '';
+        _alamatController.text = data['alamat'] ?? '';
+        displayName = data['name'] ?? ''; // juga ganti ke 'name'
+      });
+    }
+  }
+}
+
+
 
   @override
   void dispose() {
-    _namaController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _telpController.dispose();
+    _nomor_teleponController.dispose();
     _alamatController.dispose();
     super.dispose();
   }
@@ -71,7 +110,6 @@ class _EditProfilPageState extends State<EditProfilPage> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
         child: Column(
           children: [
-            // Avatar dengan tombol ubah foto
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -84,14 +122,12 @@ class _EditProfilPageState extends State<EditProfilPage> {
                   bottom: 4,
                   right: 4,
                   child: InkWell(
-                    onTap: () {
-                      // TODO: aksi ubah foto
-                    },
+                    onTap: () {},
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: const Color.fromARGB(255, 255, 255, 255), blurRadius: 4)],
+                        boxShadow: [BoxShadow(color: Colors.white, blurRadius: 4)],
                       ),
                       padding: const EdgeInsets.all(5),
                       child: const Icon(Icons.camera_alt, size: 16, color: primaryColor),
@@ -101,11 +137,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text('Sutan B.R', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: primaryColor)),
+            Text(displayName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: primaryColor)),
             const SizedBox(height: 24),
-            // Card Form
             Card(
-              color: Colors.white, // <-- pastikan baris ini ada
+              color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Padding(
@@ -114,10 +149,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField('Nama', _namaController, icon: Icons.person),
+                      _buildTextField('Nama', _nameController, icon: Icons.person),
                       _buildTextField('Email', _emailController, icon: Icons.email, inputType: TextInputType.emailAddress),
                       _buildTextField('Password', _passwordController, icon: Icons.lock, isPassword: true),
-                      _buildTextField('No. Telp', _telpController, icon: Icons.phone, inputType: TextInputType.phone),
+                      _buildTextField('No. Telp', _nomor_teleponController, icon: Icons.phone, inputType: TextInputType.phone),
                       _buildTextField('Alamat', _alamatController, icon: Icons.location_on),
                       const SizedBox(height: 18),
                       SizedBox(
@@ -130,13 +165,19 @@ class _EditProfilPageState extends State<EditProfilPage> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             elevation: 2,
                           ),
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Profil disimpan!")),
-                              );
-                            }
-                          },
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                await _firestore.collection('users').doc(uid).update({
+                                  'name': _nameController.text, // harus sama: 'name'
+                                  'nomor_telepon': _nomor_teleponController.text,
+                                  'alamat': _alamatController.text,
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Profil disimpan!")),
+                                );
+                              }
+                            },
+
                           icon: const Icon(Icons.save_alt_rounded, size: 20),
                           label: const Text("Simpan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                         ),
@@ -193,7 +234,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
           labelStyle: const TextStyle(color: Color(0xFF3A7D44)),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16), // tambah ini
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Colors.grey[300]!),
