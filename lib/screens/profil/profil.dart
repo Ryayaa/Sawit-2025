@@ -1,130 +1,163 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:admin/screens/profil/editprofilpage.dart';
-import 'package:admin/screens/widgets/profile_row.dart';
-import 'package:admin/screens/main/components/side_menu_user.dart';
+import 'package:admin/screens/profil/editprofilpage.dart' show EditProfilPage;
+import 'package:admin/screens/widgets/profile_row.dart' show ProfileRow;
+import 'package:admin/screens/main/components/side_menu.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
-
-  static const primaryColor = Color(0xFF2A2D3E);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref().child('User');
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  print('Current UID: $uid');
+
+  if (uid != null) {
+    final snapshot = await _dbRef.child(uid).get();
+    if (snapshot.exists) {
+      print('Data snapshot: ${snapshot.value}');
+      final data = Map<String, dynamic>.from(snapshot.value as Map<Object?, Object?>);
+      setState(() {
+        userData = data;
+      });
+    } else {
+      print('No data found for UID $uid');
+    }
+  }
+}
+
+
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context);
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        drawer: const SideMenu(), // <--- INI YANG MEMUNCULKAN DRAWER DI PROFIL
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false, // <-- Supaya leading custom tampil
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF3A7D44)),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Profil',
-            style: TextStyle(
-              color: Color(0xFF3A7D44),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+    return Scaffold(
+      backgroundColor: const Color(0xFF6C63FF),
+      bottomNavigationBar: _buildBottomNavBar(),
+      drawer: const SideMenu(),
+      body: Column(
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 20),
+          _buildProfileCard(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBar() {
+    return BottomAppBar(
+      color: Colors.transparent,
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white, size: 28),
+              onPressed: () {},
+              tooltip: 'Home',
             ),
-          ),
-          centerTitle: true,
+            IconButton(
+              icon: const Icon(Icons.location_on, color: Colors.white, size: 28),
+              onPressed: () {},
+              tooltip: 'Map',
+            ),
+            ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.search, size: 18),
+              label: const Text('Cari', style: TextStyle(fontSize: 13)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+            ),
+          ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 20),
-              _buildProfileCard(context),
-            ],
-          ),
-        ),
-        bottomNavigationBar: _buildBottomNavBar(),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 48, bottom: 24),
-      child: Column(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.purpleAccent, Colors.blueAccent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.only(top: 50, bottom: 40),
+      child: Stack(
         children: [
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: Colors.white,
-                backgroundImage:
-                    const AssetImage("assets/images/profile_pic.png"),
-                child: const Icon(Icons.person,
-                    size: 48, color: Color(0xFF3A7D44)),
+          Positioned(
+            left: 16,
+            top: 1,
+            child: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
               ),
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: InkWell(
-                  onTap: () {
-                    // TODO: aksi ubah foto
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: Colors.black12, blurRadius: 4)
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(4),
-                    child: const Icon(Icons.camera_alt,
-                        size: 18, color: Color(0xFFF27329)),
+            ),
+          ),
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.person, size: 50, color: Color.fromARGB(255, 59, 55, 55)),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  userData?['name'] ?? 'Loading...',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Sutan B.R',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Color(0xFFF27329),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  "Verified",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -132,355 +165,70 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileCard(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Profil Saya',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                color: Color(0xFF3A7D44),
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Email
-            Row(
-              children: [
-                Icon(Icons.email_outlined,
-                    color: Colors.blueGrey[400], size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Email",
-                          style:
-                              TextStyle(fontSize: 11, color: Colors.black54)),
-                      Text("sutan@email.com",
-                          style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit,
-                      size: 16, color: Color(0xFFF27329)),
-                  label: const Text("CHANGE",
-                      style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
-                  style: TextButton.styleFrom(
-                    minimumSize: Size(0, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F1F6)),
-            // No HP
-            Row(
-              children: [
-                Icon(Icons.phone_android,
-                    color: Colors.blueGrey[400], size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("No HP",
-                          style:
-                              TextStyle(fontSize: 11, color: Colors.black54)),
-                      Text("089680510618",
-                          style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F1F6)),
-            // Alamat
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.home_outlined,
-                    color: Colors.blueGrey[400], size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Alamat",
-                          style:
-                              TextStyle(fontSize: 11, color: Colors.black54)),
-                      Text(
-                        "Jl. Sungai Andai Komplek Herlina Perkasa",
-                        style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24, thickness: 1, color: Color(0xFFF0F1F6)),
-            // Password
-            Row(
-              children: [
-                Icon(Icons.lock_outline, color: Colors.blueGrey[400], size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Password",
-                          style:
-                              TextStyle(fontSize: 11, color: Colors.black54)),
-                      const Text("********",
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit,
-                      size: 16, color: Color(0xFFF27329)),
-                  label: const Text("CHANGE",
-                      style: TextStyle(fontSize: 12, color: Color(0xFFF27329))),
-                  style: TextButton.styleFrom(
-                    minimumSize: Size(0, 32),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const EditProfilPage()),
-                  );
-                },
-                icon: const Icon(Icons.edit, size: 18),
-                label:
-                    const Text('Edit Profil', style: TextStyle(fontSize: 15)),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  backgroundColor: const Color(0xFF3A7D44),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
-                  elevation: 2,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return BottomAppBar(
-      color: Colors.white,
-      elevation: 8,
-      child: SizedBox(
-        height: 60,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(Icons.home, "Home", false),
-            _buildNavItem(Icons.location_on, "Location", false),
-            _buildNavItem(Icons.person, "Profil", true),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool active) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            if (active)
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF27329).withOpacity(0.12),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            Icon(icon,
-                color: active ? const Color(0xFFF27329) : Colors.grey,
-                size: 26),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(
-                color: active ? const Color(0xFFF27329) : Colors.grey,
-                fontSize: 12,
-                fontWeight: active ? FontWeight.bold : FontWeight.normal)),
-      ],
-    );
-  }
-}
-
-class SideMenu extends StatelessWidget {
-  const SideMenu({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-            color: const Color(0xFF3A7D44),
-            width: double.infinity,
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white,
-                  backgroundImage:
-                      const AssetImage("assets/images/profile_pic.png"),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Sutan B.R",
-                  style: TextStyle(
-                    color: Color(0xFF3A7D44),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "089680510618",
-                  style: TextStyle(
-                    color: Color(0xFF3A7D44),
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildDrawerItem(
-                  context,
-                  title: "Home",
-                  icon: Icons.home,
-                  routeName: '/home',
-                ),
-                _buildDrawerItem(
-                  context,
-                  title: "Location",
-                  icon: Icons.location_on,
-                  routeName: '/location',
-                ),
-                _buildDrawerItem(
-                  context,
-                  title: "Profil",
-                  icon: Icons.person,
-                  routeName: '/profil',
-                  isSelected: true,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildDrawerItem(context,
-              title: "Settings", icon: Icons.settings, routeName: '/settings'),
-          _buildDrawerItem(context,
-              title: "Help", icon: Icons.help, routeName: '/help'),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            width: double.infinity,
-            child: Column(
-              children: [
-                const Text(
-                  "Version 1.0.0",
-                  style: TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "© 2023 Your Company",
-                  style: TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-              ],
-            ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
+      child: userData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Profil Saya',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 16),
+                ProfileRow(label: 'EMAIL', value: userData?['email'] ?? '', actionText: 'CHANGE'),
+                ProfileRow(label: 'NO HP', value: userData?['nomor_telepon'] ?? '-', actionText: ''),
+                ProfileRow(label: 'ALAMAT', value: userData?['alamat'] ?? '-', actionText: ''),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 400),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const EditProfilPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            final offsetAnimation = Tween<Offset>(
+                              begin: const Offset(0.0, 1.0),
+                              end: Offset.zero,
+                            ).animate(animation);
+                            final fadeAnimation = Tween<double>(
+                              begin: 0.0,
+                              end: 1.0,
+                            ).animate(animation);
 
-  Widget _buildDrawerItem(BuildContext context,
-      {required String title,
-      required IconData icon,
-      required String routeName,
-      bool isSelected = false}) {
-    return InkWell(
-      onTap: () {
-        if (ModalRoute.of(context)?.settings.name != routeName) {
-          Navigator.pushNamed(context, routeName);
-        } else {
-          Navigator.pop(
-              context); // hanya tutup drawer jika sudah di halaman itu
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFF27329).withOpacity(0.2)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon,
-                color: isSelected ? const Color(0xFFF27329) : Colors.black54,
-                size: 20),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFFF27329) : Colors.black54,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 16,
-              ),
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: FadeTransition(opacity: fadeAnimation, child: child),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit Profil', style: TextStyle(fontSize: 14)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
     );
   }
 }
