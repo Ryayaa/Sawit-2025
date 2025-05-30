@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-// import 'package:fl_chart/fl_chart.dart';
-import '../main/components/side_menu.dart';
 import 'package:provider/provider.dart';
+import '../main/components/side_menu.dart';
 import '../../controllers/menu_app_controller.dart';
+import '../../controllers/dashboard_controller.dart'; // Tambahkan import ini
 import '../../constants.dart';
 import '../../responsive.dart';
 import 'components/header.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
-// import '../../services/sensor_service.dart';
 import 'components/recent_measurements_table.dart';
 import '../../services/firebase_service.dart';
 import '../../models/sensor_reading.dart';
@@ -17,21 +16,91 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import '../../models/gps_coordinate.dart';
+import 'dart:async';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => MenuAppController(), // Perbaikan provider
+          lazy: true,
+        ),
+        ChangeNotifierProvider(
+          create: (_) => DashboardController(),
+          lazy: true,
+        ),
+      ],
+      child: const DashboardView(), // Tambahkan const
+    );
+  }
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class DashboardView extends StatefulWidget {
+  const DashboardView({super.key});
+
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
   final FirebaseService _firebaseService = FirebaseService();
+  List<StreamSubscription<List<SensorReading>>>? _subscriptions;
   final Map<String, bool> _moduleAlerts = {
     'module1': false,
     'module2': false,
     'module3': false,
   };
+
+  late Future<void> _initialization;
+  final ScrollController? _scrollController = ScrollController();
+
+  void _setupModuleListeners() {
+    try {
+      _subscriptions = ['module1', 'module2', 'module3'].map((moduleId) {
+        return _firebaseService.getModuleData(moduleId).listen(
+              (data) => _checkTemperature(moduleId, data),
+              onError: (error) =>
+                  _showErrorDialog('Error pada $moduleId: $error'),
+            );
+      }).toList();
+    } catch (e) {
+      _showErrorDialog('Error saat setup listeners: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    NotificationService.initialize();
+    _initialization = _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    // Load critical data first
+    await _loadCriticalData();
+    // Load non-critical data later
+    _loadNonCriticalData();
+  }
+
+  Future<void> _loadCriticalData() async {
+    // Implementasi pemuatan data kritis
+    _setupModuleListeners();
+  }
+
+  Future<void> _loadNonCriticalData() async {
+    // Implementasi pemuatan data non-kritis (jika ada)
+  }
+
+  @override
+  void dispose() {
+    _scrollController?.dispose();
+    _subscriptions?.forEach((sub) => sub.cancel());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: Header(),
                         ),
                       ),
-                      const SizedBox(height: defaultPadding),
+                      SizedBox(height: defaultPadding),
 
                       // Salam selamat datang
                       Padding(
@@ -105,8 +174,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: Text(
                                   "Peringatan: Suhu modul 2 di atas normal!",
                                   style: TextStyle(
-                                      color: Colors.orange[900],
-                                      fontWeight: FontWeight.w600),
+                                    color: Colors.orange[900],
+                                  ),
                                 ),
                               ),
                             ],
@@ -442,12 +511,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _refreshData() async {
     try {
       setState(() {
-        // Reset alerts
         _moduleAlerts.updateAll((key, value) => false);
       });
 
-      // Optional: Tambahkan logika refresh khusus
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Cancel existing subscriptions
+      await Future.wait(_subscriptions?.map((s) => s.cancel()) ?? []);
+
+      // Setup new listeners
+      _setupModuleListeners();
     } catch (e) {
       _showErrorDialog('Gagal memperbarui data: $e');
     }
@@ -470,42 +541,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _checkTemperature(String moduleId, List<SensorReading> readings) {
-    if (readings.isNotEmpty) {
-      double latestTemp = readings.last.temperature;
-      if (latestTemp >= 40.0) {
-        // Show notification
-        NotificationService.showTemperatureAlert(moduleId, latestTemp);
-        // Update UI alert
-        setState(() {
-          _moduleAlerts[moduleId] = true;
-        });
+    try {
+      if (readings.isNotEmpty) {
+        double latestTemp = readings.last.temperature;
+        if (latestTemp >= 40.0) {
+          NotificationService.showTemperatureAlert(moduleId, latestTemp);
+          setState(() {
+            _moduleAlerts[moduleId] = true;
+          });
+        }
       }
+    } catch (e) {
+      print('Error in _checkTemperature: $e');
+      _showErrorDialog('Error saat memeriksa suhu: $e');
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize notifications
-    NotificationService.initialize();
-
-    // Setup listeners for each module
-    ['module1', 'module2', 'module3'].forEach((moduleId) {
-      _firebaseService.getModuleData(moduleId).listen(
-        (data) {
-          _checkTemperature(moduleId, data);
-        },
-        onError: (error) {
-          _showErrorDialog('Gagal memuat data: $error');
-        },
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    // Clean up any subscriptions or controllers
-    super.dispose();
   }
 
   Widget _buildStatCard(

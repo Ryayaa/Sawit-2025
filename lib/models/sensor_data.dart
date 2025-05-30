@@ -19,4 +19,6 @@ class SensorData {
       timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] ?? 0),
     );
   }
+
+  toJson() {}
 }

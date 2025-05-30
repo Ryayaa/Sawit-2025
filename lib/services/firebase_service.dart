@@ -1,58 +1,124 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/sensor_reading.dart';
-import '../../models/gps_coordinate.dart';
+import '../models/gps_coordinate.dart';
+import '../models/sensor_data.dart';
+import '../services/cache_service.dart';
 
 class FirebaseService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final CacheService _cacheService = CacheService();
 
-  // Stream untuk satu modul spesifik
+  // Optimasi stream data sensor dengan caching dan batasan data
   Stream<List<SensorReading>> getModuleData(String moduleId) {
     return _database
         .child('$moduleId/readings')
         .orderByChild('timestamp')
-        .limitToLast(24) // Last 24 readings
+        .limitToLast(24)
         .onValue
         .map((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
-      if (data == null || data.isEmpty) return [];
+      if (data == null) return [];
 
-      List<SensorReading> readings = [];
-      data.forEach((key, value) {
-        if (value != null) {
-          final reading = Map<String, dynamic>.from(value as Map);
-          readings.add(SensorReading.fromJson(reading));
-        }
-      });
+      try {
+        final List<SensorReading> readings = [];
+        data.forEach((key, value) {
+          if (value is Map) {
+            try {
+              final reading = Map<String, dynamic>.from(value as Map);
+              readings.add(
+                SensorReading(
+                  temperature: (reading['temperature'] as num).toDouble(),
+                  soilMoisture: (reading['soilMoisture'] as num).toDouble(),
+                  humidity: (reading['humidity'] ?? 0.0) as double,
+                  timestamp: DateTime.fromMillisecondsSinceEpoch(
+                      reading['timestamp'] as int),
+                ),
+              );
+            } catch (e) {
+              print('Error parsing individual reading: $e');
+            }
+          }
+        });
 
-      return readings..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        return readings..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      } catch (e) {
+        print('Error parsing data: $e');
+        return [];
+      }
     });
   }
 
+  // Fix method getLatestReadings
+  Future<List<SensorReading>> getLatestReadings(String moduleId) async {
+    try {
+      final snapshot = await _database
+          .child('$moduleId/readings')
+          .orderByChild('timestamp')
+          .limitToLast(1)
+          .get();
+
+      if (!snapshot.exists || snapshot.value == null) return [];
+
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      return data.entries.map((e) {
+        final reading = e.value as Map<dynamic, dynamic>;
+        return SensorReading(
+          temperature: (reading['temperature'] as num).toDouble(),
+          soilMoisture: (reading['soilMoisture'] as num).toDouble(),
+          humidity: (reading['humidity'] ?? 0.0) as double,
+          timestamp:
+              DateTime.fromMillisecondsSinceEpoch(reading['timestamp'] as int),
+        );
+      }).toList();
+    } catch (e) {
+      print('Error getting latest readings: $e');
+      return [];
+    }
+  }
+
+  // Fix method updateSensorReading
   Future<void> updateSensorReading(
       String moduleId, SensorReading reading) async {
-    await _database.child('modules/$moduleId/readings').push().set({
-      'temperature': reading.temperature,
-      'humidity': reading.humidity,
-      'timestamp': reading.timestamp.millisecondsSinceEpoch,
-    });
+    try {
+      await _database.child('$moduleId/readings').push().set({
+        'temperature': reading.temperature,
+        'soilMoisture': reading.soilMoisture, // Changed from humidity
+        'timestamp': reading.timestamp.millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      print('Error updating sensor reading: $e');
+      throw Exception('Failed to update sensor reading');
+    }
   }
 
-  // Method untuk mendapatkan data terbaru dari modul
+  // Fix method getLatestReading
   Future<SensorReading?> getLatestReading(String moduleId) async {
-    final snapshot = await _database
-        .child('$moduleId/readings')
-        .orderByChild('timestamp')
-        .limitToLast(1)
-        .get();
+    try {
+      final snapshot = await _database
+          .child('$moduleId/readings')
+          .orderByChild('timestamp')
+          .limitToLast(1)
+          .get();
 
-    if (snapshot.value == null) return null;
+      if (!snapshot.exists || snapshot.value == null) return null;
 
-    final data = Map<String, dynamic>.from(
-        (snapshot.value as Map<dynamic, dynamic>).values.first as Map);
-    return SensorReading.fromJson(data);
+      final Map<dynamic, dynamic> value =
+          snapshot.value as Map<dynamic, dynamic>;
+      final data = Map<String, dynamic>.from(value.values.first as Map);
+
+      return SensorReading(
+        temperature: (data['temperature'] as num).toDouble(),
+        soilMoisture: (data['soilMoisture'] as num).toDouble(),
+        humidity: (data['humidity'] ?? 0.0) as double,
+        timestamp:
+            DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
+      );
+    } catch (e) {
+      print('Error getting latest reading: $e');
+      return null;
+    }
   }
 
   // Stream untuk semua modul
@@ -120,5 +186,41 @@ class FirebaseService {
 
       return GPSCoordinate.fromMap(map);
     });
+  }
+
+  Future<void> cacheData(String key, dynamic data) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, jsonEncode(data));
+  }
+
+  Future<SensorData?> getSensorData(String moduleId) async {
+    // Cek cache dulu
+    if (await _cacheService.isCacheValid('sensor_data_$moduleId')) {
+      return await _cacheService.getCachedData<SensorData>(
+          'sensor_data_$moduleId', (json) => SensorData.fromJson(json));
+    }
+
+    // Jika cache tidak valid, ambil dari Firebase
+    try {
+      final snapshot = await _database
+          .child('$moduleId/readings')
+          .orderByChild('timestamp')
+          .limitToLast(1)
+          .get();
+
+      if (!snapshot.exists) return null;
+
+      final data = snapshot.value as Map<dynamic, dynamic>;
+      final sensorData = SensorData.fromJson(data as Map<String, dynamic>);
+
+      // Simpan ke cache
+      await _cacheService.cacheData(
+          'sensor_data_$moduleId', sensorData.toJson());
+
+      return sensorData;
+    } catch (e) {
+      print('Error getting sensor data: $e');
+      return null;
+    }
   }
 }
