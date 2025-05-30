@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:admin/screens/profil/profil.dart';
-import '../../../screens/history/history_screen.dart';
-import '../../../screens/dashboard/dashboard_screen.dart';
+// import 'package:admin/screens/profil/profil.dart';
+// import '../../../screens/history/history_screen.dart';
+// import '../../../screens/dashboard/dashboard_screen.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({Key? key}) : super(key: key);
