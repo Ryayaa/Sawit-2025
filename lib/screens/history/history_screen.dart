@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:admin/screens/main/components/side_menu.dart'; // sudah ada
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -18,14 +19,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: const SideMenu(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF3A7D44)),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: true, // tombol menu otomatis muncul
         title: const Text(
           "Log History",
           style: TextStyle(color: Color(0xFF3A7D44), fontWeight: FontWeight.bold),
@@ -130,10 +129,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (isMobile) {
       return Column(
         children: rows.map((row) {
+          // Ambil Text dari Row pada DataCell
           final cells = row.cells;
-          final dateTime = (cells[0].child as Text).data!;
-          final date = dateTime.split(' ')[0];
-          final time = dateTime.split(' ')[1];
+          final dateRow = cells[0].child as Row;
+          final dateText = dateRow.children.whereType<Text>().first.data!;
+          final date = dateText.split(' ')[0];
+          final time = dateText.split(' ')[1];
+
+          final moduleRow = cells[1].child as Row;
+          final moduleText = moduleRow.children.whereType<Text>().first.data!;
+
+          final suhuRow = cells[2].child as Row;
+          final suhuText = suhuRow.children.whereType<Text>().first.data!;
+
+          final kelembapanRow = cells[3].child as Row;
+          final kelembapanText = kelembapanRow.children.whereType<Text>().first.data!;
 
           return Card(
             color: Colors.white,
@@ -153,7 +163,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           Icon(Icons.memory, color: Colors.blueGrey[400], size: 20),
                           const SizedBox(width: 8),
                           Text(
-                            (cells[1].child as Text).data!,
+                            moduleText,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -190,7 +200,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       Icon(Icons.thermostat, color: Colors.orange[400], size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        "Suhu: ${(cells[2].child as Text).data}",
+                        "Suhu: $suhuText",
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.black87,
@@ -205,7 +215,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       Icon(Icons.water_drop, color: Colors.blue[400], size: 18),
                       const SizedBox(width: 8),
                       Text(
-                        "Kelembapan: ${(cells[3].child as Text).data}",
+                        "Kelembapan: $kelembapanText",
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.black87,
@@ -226,10 +236,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: DataTable(
           headingRowColor: MaterialStateProperty.all(const Color(0xFFF5F6FA)),
           columns: const [
-            DataColumn(label: Text("Date/Time", style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text("Module", style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text("Temperature", style: TextStyle(fontWeight: FontWeight.bold))),
-            DataColumn(label: Text("Soil Moisture", style: TextStyle(fontWeight: FontWeight.bold))),
+            DataColumn(
+              label: Text(
+                "Date/Time",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A7D44), // hijau tua, kontras dengan putih
+                ),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Module",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A7D44),
+                ),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Temperature",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A7D44),
+                ),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                "Soil Moisture",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3A7D44),
+                ),
+              ),
+            ),
           ],
           rows: rows,
         ),
@@ -274,10 +316,58 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (selectedModule != 'All' && 'Module $moduleNum' != selectedModule) continue;
       rows.add(DataRow(
         cells: [
-          DataCell(Text(DateFormat('yyyy-MM-dd HH:mm').format(date))),
-          DataCell(Text("Module $moduleNum")),
-          DataCell(Text("${28 + (index % 3)}°C")),
-          DataCell(Text("${60 + (index % 3)}%")),
+          DataCell(Row(
+            children: [
+              const Icon(Icons.calendar_today, color: Color(0xFF3A7D44), size: 18),
+              const SizedBox(width: 6),
+              Text(
+                DateFormat('yyyy-MM-dd HH:mm').format(date),
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          )),
+          DataCell(Row(
+            children: [
+              const Icon(Icons.memory, color: Colors.blueGrey, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                "Module $moduleNum",
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          )),
+          DataCell(Row(
+            children: [
+              const Icon(Icons.thermostat, color: Colors.orange, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                "${28 + (index % 3)}°C",
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          )),
+          DataCell(Row(
+            children: [
+              const Icon(Icons.water_drop, color: Colors.blue, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                "${60 + (index % 3)}%",
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          )),
         ],
       ));
     }

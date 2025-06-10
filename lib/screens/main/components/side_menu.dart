@@ -10,6 +10,7 @@ class SideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: const Color(0xFFF1F1F1), // abu-abu muda
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
       ),
@@ -20,7 +21,7 @@ class SideMenu extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 255, 255, 255),
+                color: Color(0xFFF1F1F1), // sama dengan background drawer
                 boxShadow: [
                   BoxShadow(
                     color: Color(0x1A3A7D44),

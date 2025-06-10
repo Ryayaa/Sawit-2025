@@ -196,21 +196,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        elevation: 8,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildNavItem(Icons.home, "Home", false),
-              _buildNavItem(Icons.location_on, "Location", false),
-              _buildNavItem(Icons.person, "Profil", true),
-            ],
-          ),
-        ),
-      ),
+    
     );
   }
 
