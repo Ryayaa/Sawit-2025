@@ -7,7 +7,7 @@ import '../../constants.dart';
 import '../../responsive.dart';
 import '../../services/firebase_service.dart';
 import '../../models/sensor_reading.dart';
-import 'components/header.dart';
+import 'components/header_user.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
 import 'components/recent_measurements_table.dart';
@@ -61,7 +61,7 @@ class _DashboardUserState extends State<DashboardUser> {
                 padding: const EdgeInsets.all(defaultPadding),
                 child: Column(
                   children: [
-                    const Header(), // Will use default "Dashboard" title
+                    const HeaderUser(), // Will use default "Dashboard" title
                     const SizedBox(height: defaultPadding),
 
                     // Widget cuaca dan suhu
