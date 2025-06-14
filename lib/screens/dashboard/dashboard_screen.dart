@@ -193,6 +193,11 @@ class _DashboardViewState extends State<DashboardView> {
                           StreamBuilder<String>(
                             stream: AuthService().getUserDisplayName(),
                             builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+
                               return Padding(
                                 padding: const EdgeInsets.only(
                                     left: 16.0, top: 16.0, bottom: 4.0),

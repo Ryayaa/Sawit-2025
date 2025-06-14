@@ -11,6 +11,7 @@ import 'components/header_user.dart';
 import 'components/live_chart.dart';
 import 'components/cuaca_besok_widget.dart';
 import 'components/recent_measurements_table.dart';
+import '../../services/auth_service.dart';
 
 class DashboardUser extends StatefulWidget {
   const DashboardUser({super.key});
@@ -62,6 +63,41 @@ class _DashboardUserState extends State<DashboardUser> {
                 child: Column(
                   children: [
                     const HeaderUser(), // Will use default "Dashboard" title
+                    const SizedBox(height: defaultPadding),
+
+                    // Add this after HeaderUser
+                    StreamBuilder<Map<String, dynamic>>(
+                      stream: AuthService().getUserData(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+
+                        // Get data from snapshot and handle null cases
+                        final userData =
+                            snapshot.data ?? {'name': 'User', 'role': 2};
+                        final isAdmin = userData['role'] == 1;
+                        final userName = userData['name'] ?? 'User';
+                        final roleText = isAdmin ? 'Admin' : 'User';
+
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, top: 16.0, bottom: 4.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Selamat datang, $userName ($roleText) 👋",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green[900],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: defaultPadding),
 
                     // Widget cuaca dan suhu
