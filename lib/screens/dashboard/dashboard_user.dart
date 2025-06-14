@@ -65,9 +65,12 @@ class _DashboardUserState extends State<DashboardUser> {
                     const SizedBox(height: defaultPadding),
 
                     // Widget cuaca dan suhu
-                    const CuacaBesokWidget(
-                      suhuTerkini: '30',
-                      ramalanBesok: 'Cerah berawan',
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: DefaultTextStyle(
+                        style: TextStyle(color: Colors.black),
+                        child: CuacaBesokWidget(),
+                      ),
                     ),
                     const SizedBox(height: defaultPadding),
 

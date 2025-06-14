@@ -34,4 +34,8 @@ class AuthService {
     }
     return null;
   }
+
+Stream<String> getUserDisplayName() {
+    return _auth.authStateChanges().map((user) => user?.displayName ?? 'User');
+  }
 }

@@ -27,15 +27,7 @@ class FirebaseService {
           if (value is Map) {
             try {
               final reading = Map<String, dynamic>.from(value as Map);
-              readings.add(
-                SensorReading(
-                  temperature: (reading['temperature'] as num).toDouble(),
-                  soilMoisture: (reading['soilMoisture'] as num).toDouble(),
-                  humidity: (reading['humidity'] ?? 0.0) as double,
-                  timestamp: DateTime.fromMillisecondsSinceEpoch(
-                      reading['timestamp'] as int),
-                ),
-              );
+              readings.add(SensorReading.fromJson(reading));
             } catch (e) {
               print('Error parsing individual reading: $e');
             }
