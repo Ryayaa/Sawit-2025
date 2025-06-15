@@ -137,12 +137,14 @@ class _CuacaBesokWidgetState extends State<CuacaBesokWidget> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _weatherData['ramalanBesok'],
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
+                    _weatherData['ramalanBesok'],
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
                       ),
                     ],
                   ),

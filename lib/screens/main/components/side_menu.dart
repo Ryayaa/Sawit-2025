@@ -112,7 +112,7 @@ class SideMenu extends StatelessWidget {
             ),
             DrawerListTile(
               title: "USER",
-              svgSrc: "assets/icons/menu_tran.svg",
+              svgSrc: "assets/icons/menu_profile.svg",
               routeName: '/user',
               selected: ModalRoute.of(context)?.settings.name == '/user',
               press: () {

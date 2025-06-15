@@ -16,7 +16,7 @@ class RecentMeasurementsTable extends StatefulWidget {
 class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
   final int itemsPerPage = 10;
   int _currentPage = 0;
-  late List<Map<String, dynamic>> _measurements; // Tambahkan ini
+  late List<Map<String, dynamic>> _measurements;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
   }
 
   @override
-  void didUpdateWidget(RecentMeasurementsTable oldWidget) {
+  void didUpdateWidget(covariant RecentMeasurementsTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.initialMeasurements != oldWidget.initialMeasurements) {
       setState(() {
@@ -34,64 +34,74 @@ class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
     }
   }
 
-  // Add pagination controls
   Widget buildPaginatedTable() {
     final int totalPages = (_measurements.length / itemsPerPage).ceil();
     final int startIndex = _currentPage * itemsPerPage;
-    final int endIndex = (startIndex + itemsPerPage) > _measurements.length
+    final int endIndex = (startIndex + itemsPerPage > _measurements.length)
         ? _measurements.length
         : startIndex + itemsPerPage;
 
     return Column(
       children: [
-        DataTable(
-          columns: const [
-            DataColumn(label: Text('Modul')),
-            DataColumn(label: Text('Suhu (°C)')),
-            DataColumn(label: Text('Kelembapan (%)')),
-          ],
-          rows: _measurements
-              .sublist(startIndex, endIndex)
-              .map(
-                (data) => DataRow(
-                  cells: [
-                    DataCell(
-                      Row(
-                        children: [
-                          Icon(Icons.memory,
-                              size: 18, color: Colors.green[700]),
-                          const SizedBox(width: 6),
-                          Text(
-                            data['module'].toString(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87, // warna hitam/abu gelap
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columnSpacing: 28,
+            headingRowColor: MaterialStateProperty.all(Colors.blue.shade100),
+            columns: const [
+              DataColumn(label: Text('Modul')),
+              DataColumn(label: Text('Suhu (°C)')),
+              DataColumn(label: Text('Kelembapan (%)')),
+            ],
+            rows: _measurements
+                .sublist(startIndex, endIndex)
+                .map(
+                  (data) => DataRow(
+                    cells: [
+                      DataCell(
+                        Row(
+                          children: [
+                            Icon(Icons.memory,
+                                size: 18, color: Colors.green.shade700),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                data['module'].toString(),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                      DataCell(
+                        Text(
+                          "${data['temperature']}°",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.redAccent,
                           ),
-                        ],
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        data['temperature'].toString(),
-                        style: const TextStyle(
-                          color: Colors.black87, // warna hitam/abu gelap
                         ),
                       ),
-                    ),
-                    DataCell(
-                      Text(
-                        data['soilMoisture'].toString(),
-                        style: const TextStyle(
-                          color: Colors.black87, // warna hitam/abu gelap
+                      DataCell(
+                        Text(
+                          "${data['soilMoisture']}%",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.blueAccent,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              )
-              .toList(),
+                    ],
+                  ),
+                )
+                .toList(),
+          ),
         ),
+        const SizedBox(height: 10),
         PaginationControls(
           currentPage: _currentPage,
           totalPages: totalPages,
@@ -104,8 +114,9 @@ class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
+      elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -115,11 +126,11 @@ class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
               "Data Terbaru",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: Color.fromARGB(255, 255, 255, 255),
+                fontSize: 20,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             buildPaginatedTable(),
           ],
         ),
@@ -146,16 +157,24 @@ class PaginationControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed:
               currentPage > 0 ? () => onPageChanged(currentPage - 1) : null,
+          color: Colors.blue,
         ),
-        Text('Page ${currentPage + 1} of $totalPages'),
+        Text(
+          'Halaman ${currentPage + 1} dari $totalPages',
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.black54,
+          ),
+        ),
         IconButton(
-          icon: Icon(Icons.arrow_forward),
+          icon: const Icon(Icons.arrow_forward_ios),
           onPressed: currentPage < totalPages - 1
               ? () => onPageChanged(currentPage + 1)
               : null,
+          color: Colors.blue,
         ),
       ],
     );

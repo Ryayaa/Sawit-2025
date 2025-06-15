@@ -124,7 +124,7 @@ class ProfileCard extends StatelessWidget {
           backgroundColor: Colors.white,
           child: CircleAvatar(
             radius: 21,
-            backgroundImage: AssetImage("assets/images/profile_pic.png"),
+            backgroundImage: AssetImage("assets/images/logosawit.png"),
             backgroundColor: Colors.grey[200],
           ),
         ),
