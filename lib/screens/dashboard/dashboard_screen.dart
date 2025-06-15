@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import '../../models/gps_coordinate.dart';
 import 'dart:async';
 import '../../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -51,9 +52,12 @@ class _DashboardViewState extends State<DashboardView> {
   final FirebaseService _firebaseService = FirebaseService();
   List<StreamSubscription<List<SensorReading>>>? _subscriptions;
   final Map<String, bool> _moduleAlerts = {
-    'module1': false,
-    'module2': false,
-    'module3': false,
+    'module1_temp': false,
+    'module1_humidity': false,
+    'module2_temp': false,
+    'module2_humidity': false,
+    'module3_temp': false,
+    'module3_humidity': false,
   };
 
   late Future<void> _initialization;
@@ -216,35 +220,34 @@ class _DashboardViewState extends State<DashboardView> {
                             },
                           ),
 
-                          // Peringatan suhu (letakkan di sini, paling atas)
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.orange[100],
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: Colors.orange, width: 1),
+                          // Alerts section
+                          Column(
+                            children: [
+                              // Temperature alerts
+                              Builder(
+                                builder: (context) {
+                                  String tempMessage =
+                                      _getCombinedAlertMessage('temp');
+                                  if (tempMessage.isNotEmpty) {
+                                    return _buildAlertNotification(
+                                        tempMessage, true);
+                                  }
+                                  return const SizedBox.shrink();
+                                },
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.warning,
-                                      color: Colors.orange[800]),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      "Peringatan: Suhu modul 2 di atas normal!",
-                                      style: TextStyle(
-                                        color: Colors.orange[900],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              // Humidity alerts
+                              Builder(
+                                builder: (context) {
+                                  String humidityMessage =
+                                      _getCombinedAlertMessage('humidity');
+                                  if (humidityMessage.isNotEmpty) {
+                                    return _buildAlertNotification(
+                                        humidityMessage, true);
+                                  }
+                                  return const SizedBox.shrink();
+                                },
                               ),
-                            ),
+                            ],
                           ),
                           const SizedBox(height: defaultPadding),
 
@@ -614,18 +617,87 @@ class _DashboardViewState extends State<DashboardView> {
   void _checkTemperature(String moduleId, List<SensorReading> readings) {
     try {
       if (readings.isNotEmpty) {
-        double latestTemp = readings.last.temperature;
-        if (latestTemp >= 40.0) {
-          NotificationService.showTemperatureAlert(moduleId, latestTemp);
+        final latest = readings.last;
+
+        SharedPreferences.getInstance().then((prefs) {
+          final tempThreshold =
+              double.tryParse(prefs.getString('tempThreshold') ?? '40') ?? 40.0;
+          final humidityThreshold =
+              double.tryParse(prefs.getString('humidityThreshold') ?? '30') ??
+                  30.0;
+
           setState(() {
-            _moduleAlerts[moduleId] = true;
+            if (latest.temperature >= tempThreshold) {
+              _moduleAlerts['${moduleId}_temp'] = true;
+            } else {
+              _moduleAlerts['${moduleId}_temp'] = false;
+            }
+
+            if (latest.humidity >= humidityThreshold) {
+              _moduleAlerts['${moduleId}_humidity'] = true;
+            } else {
+              _moduleAlerts['${moduleId}_humidity'] = false;
+            }
           });
-        }
+        });
       }
     } catch (e) {
       print('Error in _checkTemperature: $e');
-      _showErrorDialog('Error saat memeriksa suhu: $e');
+      _showErrorDialog('Error saat memeriksa sensor: $e');
     }
+  }
+
+  String _getCombinedAlertMessage(String type) {
+    List<String> alertedModules = [];
+
+    for (int i = 1; i <= 3; i++) {
+      if (_moduleAlerts['module${i}_$type'] == true) {
+        alertedModules.add(i.toString());
+      }
+    }
+
+    if (alertedModules.isEmpty) return '';
+
+    String modules = alertedModules.length == 3
+        ? '1, 2 dan 3'
+        : alertedModules.length == 2
+            ? '${alertedModules[0]} dan ${alertedModules[1]}'
+            : alertedModules[0];
+
+    String alertType = type == 'temp' ? 'suhu' : 'kelembaban';
+
+    return 'Peringatan: Modul $modules mengalami kenaikan $alertType!';
+  }
+
+  Widget _buildAlertNotification(String message, bool isVisible) {
+    if (!isVisible) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.orange[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange, width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.warning, color: Colors.orange[800]),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.orange[900],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildStatCard(

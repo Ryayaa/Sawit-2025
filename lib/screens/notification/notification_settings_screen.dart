@@ -18,9 +18,9 @@ class NotificationSettingsScreen extends StatefulWidget {
 class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
   final _temperatureController = TextEditingController(text: '40');
-  final _moistureController = TextEditingController(text: '30');
+  final _humidityController = TextEditingController(text: '30');
   bool _temperatureEnabled = true;
-  bool _moistureEnabled = true;
+  bool _humidityEnabled = true;
 
   @override
   void initState() {
@@ -32,27 +32,30 @@ class _NotificationSettingsScreenState
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _temperatureController.text = prefs.getString('tempThreshold') ?? '40';
-      _moistureController.text = prefs.getString('moistureThreshold') ?? '30';
+      _humidityController.text = prefs.getString('humidityThreshold') ?? '30';
       _temperatureEnabled = prefs.getBool('tempEnabled') ?? true;
-      _moistureEnabled = prefs.getBool('moistureEnabled') ?? true;
+      _humidityEnabled = prefs.getBool('humidityEnabled') ?? true;
     });
   }
 
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('tempThreshold', _temperatureController.text);
-    await prefs.setString('moistureThreshold', _moistureController.text);
+    await prefs.setString('humidityThreshold', _humidityController.text);
     await prefs.setBool('tempEnabled', _temperatureEnabled);
-    await prefs.setBool('moistureEnabled', _moistureEnabled);
+    await prefs.setBool('humidityEnabled', _humidityEnabled);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pengaturan notifikasi berhasil disimpan')),
+      const SnackBar(
+        content: Text('Pengaturan notifikasi berhasil disimpan'),
+        backgroundColor: Color(0xFF3A7D44),
+      ),
     );
   }
 
   Widget _buildSettingCard({
     required String title,
-    required String iconPath,
+    required IconData icon,
     required bool isEnabled,
     required Function(bool) onChanged,
     required TextEditingController controller,
@@ -90,7 +93,7 @@ class _NotificationSettingsScreenState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        title == 'Suhu' ? Icons.thermostat : Icons.water_drop,
+                        icon,
                         color: const Color(0xFF3A7D44),
                         size: 24,
                       ),
@@ -128,43 +131,31 @@ class _NotificationSettingsScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                      TextField(
+                        controller: controller,
+                        enabled: isEnabled,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF2A2D3E),
                         ),
-                        child: TextField(
-                          controller: controller,
-                          enabled: isEnabled,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF2A2D3E),
+                        decoration: InputDecoration(
+                          labelText: label,
+                          suffixText: suffix,
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
-                          decoration: InputDecoration(
-                            labelText: label,
-                            suffixText: suffix,
-                            filled: true,
-                            fillColor: Colors.white,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey[300]!),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFF3A7D44)),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey[200]!),
-                            ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF3A7D44)),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[200]!),
                           ),
                         ),
                       ),
@@ -219,7 +210,7 @@ class _NotificationSettingsScreenState
                           children: [
                             _buildSettingCard(
                               title: 'Suhu',
-                              iconPath: 'assets/icons/temperature.svg',
+                              icon: Icons.thermostat,
                               isEnabled: _temperatureEnabled,
                               onChanged: (value) =>
                                   setState(() => _temperatureEnabled = value),
@@ -228,13 +219,13 @@ class _NotificationSettingsScreenState
                               suffix: '°C',
                             ),
                             _buildSettingCard(
-                              title: 'Kelembapan Tanah',
-                              iconPath: 'assets/icons/humidity.svg',
-                              isEnabled: _moistureEnabled,
+                              title: 'Kelembaban Udara',
+                              icon: Icons.water_drop,
+                              isEnabled: _humidityEnabled,
                               onChanged: (value) =>
-                                  setState(() => _moistureEnabled = value),
-                              controller: _moistureController,
-                              label: 'Masukkan batas kelembapan',
+                                  setState(() => _humidityEnabled = value),
+                              controller: _humidityController,
+                              label: 'Masukkan batas kelembaban',
                               suffix: '%',
                             ),
                             const SizedBox(height: defaultPadding),
