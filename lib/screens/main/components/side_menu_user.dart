@@ -65,7 +65,7 @@ class SideMenuUser extends StatelessWidget {
          
           DrawerListTile(
             title: "Profil",
-            svgSrc: "assets/icons/menu_tran.svg",
+            svgSrc: "assets/icons/menu_profile.svg",
             press: () {
               Navigator.push(
                 context,
