@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => MenuAppController(), // Perbaikan provider
+          create: (_) => MenuAppController(),
           lazy: true,
         ),
         ChangeNotifierProvider(
@@ -36,7 +36,7 @@ class DashboardScreen extends StatelessWidget {
           lazy: true,
         ),
       ],
-      child: const DashboardView(), // Tambahkan const
+      child: const DashboardView(),
     );
   }
 }
@@ -66,14 +66,12 @@ class _DashboardViewState extends State<DashboardView> {
   void _setupModuleListeners() {
     try {
       _subscriptions = ['module1'].map((moduleId) {
-        // Start with only one module
         return _firebaseService.getModuleData(moduleId).listen(
               (data) => _checkTemperature(moduleId, data),
               onError: (error) => print('Error listening to $moduleId: $error'),
             );
       }).toList();
 
-      // Load other modules after delay
       Future.delayed(const Duration(seconds: 2), () {
         _addRemainingModuleListeners();
       });
@@ -106,24 +104,19 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _initializeData() async {
     try {
-      // Load critical data first
       await Future.wait([
         NotificationService.initialize(),
         _loadCriticalData(),
       ]);
-
-      // Load non-critical data after UI is shown
       Future.delayed(const Duration(milliseconds: 100), () {
         _loadNonCriticalData();
       });
     } catch (e) {
       print('Error initializing data: $e');
-      // Handle initialization error
     }
   }
 
   Future<void> _loadCriticalData() async {
-    // Load only essential data for initial render
     try {
       _setupModuleListeners();
     } catch (e) {
@@ -163,7 +156,7 @@ class _DashboardViewState extends State<DashboardView> {
           }
 
           return Container(
-            color: Colors.white, // Background putih polos
+            color: Colors.white,
             child: SafeArea(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +289,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 ),
                                 const SizedBox(height: 8),
                                 LinearProgressIndicator(
-                                  value: 0.71, // misal 71% dari target
+                                  value: 0.71,
                                   minHeight: 10,
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -338,8 +331,7 @@ class _DashboardViewState extends State<DashboardView> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Card(
-                              color: const Color(
-                                  0xFFF5F6FA), // abu-abu muda, sangat soft
+                              color: const Color(0xFFF5F6FA),
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -360,8 +352,7 @@ class _DashboardViewState extends State<DashboardView> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Card(
-                              color: const Color(
-                                  0xFFF5F6FA), // abu-abu muda, sangat soft
+                              color: const Color(0xFFF5F6FA),
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -457,7 +448,6 @@ class _DashboardViewState extends State<DashboardView> {
                                   );
                                 }
 
-                                // Tambahkan pengecekan data kosong
                                 if (!snapshot.hasData ||
                                     (snapshot.data?.latitude == 0 &&
                                         snapshot.data?.longitude == 0)) {
@@ -503,11 +493,8 @@ class _DashboardViewState extends State<DashboardView> {
                                               options: MapOptions(
                                                 center: point,
                                                 zoom: 15,
-                                                // Add these options for interactivity
-                                                minZoom:
-                                                    3, // Minimum zoom level
-                                                maxZoom:
-                                                    18, // Maximum zoom level
+                                                minZoom: 3,
+                                                maxZoom: 18,
                                                 enableScrollWheel: true,
                                                 interactionOptions:
                                                     const InteractionOptions(
@@ -588,10 +575,7 @@ class _DashboardViewState extends State<DashboardView> {
         _moduleAlerts.updateAll((key, value) => false);
       });
 
-      // Cancel existing subscriptions
       await Future.wait(_subscriptions?.map((s) => s.cancel()) ?? []);
-
-      // Setup new listeners
       _setupModuleListeners();
     } catch (e) {
       _showErrorDialog('Gagal memperbarui data: $e');
