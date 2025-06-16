@@ -2,24 +2,39 @@ import 'package:flutter/material.dart';
 
 class SensorReading {
   final double temperature;
-  final double humidity;
   final double soilMoisture;
+  final double humidity;
   final DateTime timestamp;
 
   SensorReading({
     required this.temperature,
-    required this.humidity,
     required this.soilMoisture,
+    required this.humidity,
     required this.timestamp,
   });
 
   factory SensorReading.fromJson(Map<String, dynamic> json) {
     return SensorReading(
-      temperature: (json['temperature'] ?? 0).toDouble(),
-      humidity: (json['humidity'] ?? 0).toDouble(),
-      soilMoisture: (json['soilMoisture'] ?? 0).toDouble(),
-      timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] ?? 0),
+      temperature: _parseDoubleValue(json['temperature']),
+      soilMoisture: _parseDoubleValue(json['soilMoisture']),
+      humidity: _parseDoubleValue(json['humidity'] ?? '0.0'),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(
+          _parseIntValue(json['timestamp'])),
     );
+  }
+
+  static double _parseDoubleValue(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.parse(value);
+    return 0.0;
+  }
+
+  static int _parseIntValue(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) return int.parse(value);
+    return 0;
   }
 }
 

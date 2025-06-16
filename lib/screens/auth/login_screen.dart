@@ -32,28 +32,44 @@ class _LoginScreenState extends State<LoginScreen> {
 UserModel? currentUser;
  Future<void> _login() async {
   if (_formKey.currentState!.validate()) {
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text;
-
-    // Ubah menjadi format email jika perlu
-    String email = username.contains('@') ? username : '$username@sawit.com';
+    final inputUsername = _usernameController.text.trim();
+    final inputPassword = _passwordController.text;
 
     try {
-      // Login menggunakan FirebaseAuth
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-
-      // UID berhasil diambil
-      String uid = userCredential.user?.uid ?? "UID kosong";
-      print("Login berhasil dengan UID: $uid");
-
-      // Ambil role user dari Realtime Database
+      // Ambil user dari Realtime Database berdasarkan username
       final dbRef = FirebaseDatabase.instance.ref('User');
       final snapshot = await dbRef.get();
 
+      String? matchedEmail;
+
       for (final child in snapshot.children) {
         final user = Map<String, dynamic>.from(child.value as Map);
-        if (user['email'] == email) {
+
+        // Cocokkan username
+        if (user['name'] == inputUsername) {
+          matchedEmail = user['email'];
+          break;
+        }
+      }
+
+      if (matchedEmail == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username tidak ditemukan')),
+        );
+        return;
+      }
+
+      // Gunakan email dari Realtime DB untuk login di FirebaseAuth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: matchedEmail, password: inputPassword);
+
+      // Jika berhasil login, ambil UID dan role
+      String uid = userCredential.user?.uid ?? "UID kosong";
+      print("Login berhasil dengan UID: $uid");
+
+      for (final child in snapshot.children) {
+        final user = Map<String, dynamic>.from(child.value as Map);
+        if (user['email'] == matchedEmail) {
           int role = int.tryParse(user['role'].toString()) ?? 0;
 
           Widget destination;
@@ -93,7 +109,7 @@ UserModel? currentUser;
     } on FirebaseAuthException catch (e) {
       String message = 'Login gagal';
       if (e.code == 'user-not-found') {
-        message = 'User tidak ditemukan';
+        message = 'Email tidak ditemukan';
       } else if (e.code == 'wrong-password') {
         message = 'Password salah';
       }
@@ -103,6 +119,7 @@ UserModel? currentUser;
     }
   }
 }
+
 
 
   @override

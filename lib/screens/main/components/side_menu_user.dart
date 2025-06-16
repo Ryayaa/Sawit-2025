@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:admin/screens/profil/profil.dart';
+import 'package:admin/screens/profil/profil_user.dart';
 
 import '../../../screens/dashboard/dashboard_user.dart';
 import 'package:provider/provider.dart';
@@ -65,11 +65,11 @@ class SideMenuUser extends StatelessWidget {
          
           DrawerListTile(
             title: "Profil",
-            svgSrc: "assets/icons/menu_tran.svg",
+            svgSrc: "assets/icons/menu_profile.svg",
             press: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProfilePage()),
+                MaterialPageRoute(builder: (context) => ProfileUser()),
               );
             },
           ),

@@ -3,13 +3,13 @@ import 'package:admin/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:admin/screens/profil/profil.dart';
+import 'package:admin/screens/profil/profil_user.dart';
 
 import '../../../constants.dart';
 
-class Header extends StatelessWidget {
+class HeaderUser extends StatelessWidget {
   final String title;
-  const Header({
+  const HeaderUser({
     Key? key,
     this.title = "Dashboard", // Default title
   }) : super(key: key);
@@ -50,7 +50,7 @@ class ProfileCard extends StatelessWidget {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+              pageBuilder: (context, animation, secondaryAnimation) => ProfileUser(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
@@ -124,7 +124,7 @@ class ProfileCard extends StatelessWidget {
           backgroundColor: Colors.white,
           child: CircleAvatar(
             radius: 21,
-            backgroundImage: AssetImage("assets/images/logosawit.png"),
+            backgroundImage: AssetImage("assets/images/profile_pic.png"),
             backgroundColor: Colors.grey[200],
           ),
         ),

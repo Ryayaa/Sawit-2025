@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:admin/screens/profil/profil.dart';
-import '../../../screens/history/history_screen.dart';
-import '../../../screens/dashboard/dashboard_screen.dart';
+// import 'package:admin/screens/profil/profil.dart';
+// import '../../../screens/history/history_screen.dart';
+// import '../../../screens/dashboard/dashboard_screen.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({Key? key}) : super(key: key);
@@ -106,6 +106,20 @@ class SideMenu extends StatelessWidget {
                 if (ModalRoute.of(context)?.settings.name != '/profil') {
                   Navigator.pushNamed(
                       context, '/profil'); // <-- INI YANG BENAR!
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            DrawerListTile(
+              title: "USER",
+              svgSrc: "assets/icons/menu_profile.svg",
+              routeName: '/user',
+              selected: ModalRoute.of(context)?.settings.name == '/user',
+              press: () {
+                if (ModalRoute.of(context)?.settings.name != '/user') {
+                  Navigator.pushNamed(
+                      context, '/user'); // <-- INI YANG BENAR!
                 } else {
                   Navigator.pop(context);
                 }
