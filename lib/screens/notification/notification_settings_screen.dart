@@ -6,6 +6,12 @@ import 'package:admin/responsive.dart';
 import '../main/components/side_menu.dart';
 import '../dashboard/components/header.dart';
 import '../../../constants.dart';
+import 'package:intl/intl.dart';
+import 'package:admin/screens/history/history_screen.dart' show kPrimaryColor;
+
+const kAccentColor = Color(0xFF91C788);
+const kCardBackground = Color(0xFFF9F9F9);
+const kShadowColor = Color(0xFFE0E0E0);
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({Key? key}) : super(key: key);
@@ -170,6 +176,68 @@ class _NotificationSettingsScreenState
     );
   }
 
+  void _showDateTimesForModule(BuildContext context, int moduleNum) {
+    DateTime? latestDate;
+    // Cari date terbaru untuk moduleNum
+    for (int index = 0; index < 15; index++) {
+      final date = DateTime.now().subtract(Duration(minutes: index * 5));
+      final modNum = (index % 3) + 1;
+      if (modNum == moduleNum) {
+        if (latestDate == null || date.isAfter(latestDate)) {
+          latestDate = date;
+        }
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Date/Time Terbaru untuk Module $moduleNum',
+          style: const TextStyle(
+            color: kPrimaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        content: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: latestDate == null
+              ? const Text(
+                  'Tidak ada data.',
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 15,
+                  ),
+                )
+              : ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
+                  title: Text(
+                    DateFormat('yyyy-MM-dd HH:mm').format(latestDate),
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: kPrimaryColor,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -212,8 +280,9 @@ class _NotificationSettingsScreenState
                               title: 'Suhu',
                               icon: Icons.thermostat,
                               isEnabled: _temperatureEnabled,
-                              onChanged: (value) =>
-                                  setState(() => _temperatureEnabled = value),
+                              onChanged: (value) => setState(() {
+                                _temperatureEnabled = value;
+                              }),
                               controller: _temperatureController,
                               label: 'Masukkan batas suhu',
                               suffix: '°C',
@@ -222,8 +291,9 @@ class _NotificationSettingsScreenState
                               title: 'Kelembaban Udara',
                               icon: Icons.water_drop,
                               isEnabled: _humidityEnabled,
-                              onChanged: (value) =>
-                                  setState(() => _humidityEnabled = value),
+                              onChanged: (value) => setState(() {
+                                _humidityEnabled = value;
+                              }),
                               controller: _humidityController,
                               label: 'Masukkan batas kelembaban',
                               suffix: '%',
@@ -235,16 +305,15 @@ class _NotificationSettingsScreenState
                                 onPressed: _saveSettings,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF3A7D44),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   elevation: 4,
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
+                                  children: const [
                                     Icon(Icons.save, size: 20),
                                     SizedBox(width: 8),
                                     Text(
