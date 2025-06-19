@@ -13,6 +13,7 @@ import 'screens/history/history_screen.dart';
 import 'screens/notification/notification_settings_screen.dart';
 import 'screens/user/user_screen.dart';
 import 'config/firebase_options.dart';
+import 'screens/dashboard/pesan_screen.dart';
 
 Future<void> main() async {
   try {
@@ -158,6 +159,7 @@ class MyApp extends StatelessWidget {
       '/': (context) => const LoginScreen(),
       '/dashboard': (context) => const DashboardScreen(), // Add const
       '/profil': (context) => const ProfilePage(),
+      '/pesan': (context) => const PesanScreen(), // Redirect to dashboard
       '/history': (context) => const HistoryScreen(),
       '/notification': (context) => const NotificationSettingsScreen(),
       '/user': (context) => const UserScreen(),

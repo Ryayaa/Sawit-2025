@@ -111,6 +111,20 @@ class SideMenu extends StatelessWidget {
               },
             ),
             DrawerListTile(
+              title: "Pesan",
+              svgSrc: "assets/icons/menu_tran.svg",
+              routeName: '/pesan',
+              selected: ModalRoute.of(context)?.settings.name == '/pesan',
+              press: () {
+                if (ModalRoute.of(context)?.settings.name != '/pesan') {
+                  Navigator.pushNamed(
+                      context, '/pesan'); // <-- INI YANG BENAR!
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            DrawerListTile(
               title: "USER",
               svgSrc: "assets/icons/menu_profile.svg",
               routeName: '/user',

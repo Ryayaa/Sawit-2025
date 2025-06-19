@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:admin/screens/main/components/side_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
@@ -140,6 +142,7 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
     TextEditingController emailController = TextEditingController(text: userData['email']);
     TextEditingController phoneController = TextEditingController(text: userData['nomor_telepon']);
     TextEditingController addressController = TextEditingController(text: userData['alamat']);
+    TextEditingController passwordController = TextEditingController(); // Tambahan
 
     showDialog(
       context: context,
@@ -162,6 +165,8 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                   _buildTextField('Email', emailController, readOnly: true),
                   _buildTextField('Nomor Telepon', phoneController),
                   _buildTextField('Alamat', addressController),
+                  _buildTextField('Password', passwordController),
+
                 ],
               ),
             ),
@@ -175,18 +180,36 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
                 onPressed: () async {
-                  String userId = userData['id'];
-                  DatabaseReference userRef = FirebaseDatabase.instance.ref().child('User').child(userId);
+                String userId = userData['id'];
+                DatabaseReference userRef = FirebaseDatabase.instance.ref().child('User').child(userId);
 
-                  await userRef.update({
-                    'name': nameController.text.trim(),
-                    'nomor_telepon': phoneController.text.trim(),
-                    'alamat': addressController.text.trim(),
-                  });
+                await userRef.update({
+                  'name': nameController.text.trim(),
+                  'nomor_telepon': phoneController.text.trim(),
+                  'alamat': addressController.text.trim(),
+                  if (passwordController.text.trim().isNotEmpty)
+                    'password': passwordController.text.trim(),
+                });
 
-                  Navigator.pop(context);
-                  _fetchUsersFromFirebase();
-                },
+                // Ubah password juga di Firebase Auth (jika user saat ini yang sedang login yang diubah)
+                if (passwordController.text.trim().isNotEmpty) {
+                  try {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null && user.email == emailController.text.trim()) {
+                      await user.updatePassword(passwordController.text.trim());
+                    }
+                  } catch (e) {
+                    debugPrint("Gagal ubah password: $e");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Gagal mengubah password di Authentication")),
+                    );
+                  }
+                }
+
+                Navigator.pop(context);
+                _fetchUsersFromFirebase();
+              },
+
                 child: const Text('Simpan'),
               ),
             ],

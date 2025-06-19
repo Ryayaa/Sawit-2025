@@ -187,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 const Text('Profil Saya',
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black87)),
                 const SizedBox(height: 16),
-                ProfileRow(label: 'EMAIL', value: userData?['email'] ?? '', actionText: 'CHANGE'),
+                ProfileRow(label: 'EMAIL', value: userData?['email'] ?? '', actionText: ''),
                 ProfileRow(label: 'NO HP', value: userData?['nomor_telepon'] ?? '-', actionText: ''),
                 ProfileRow(label: 'ALAMAT', value: userData?['alamat'] ?? '-', actionText: ''),
                 Center(
