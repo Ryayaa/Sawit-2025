@@ -60,8 +60,20 @@ class _DashboardViewState extends State<DashboardView> {
     'module3_humidity': false,
   };
 
+  // Normal range thresholds
+  double _tempMinNormal = 25.0;
+  double _tempMaxNormal = 35.0;
+  double _humidityMinNormal = 60.0;
+  double _humidityMaxNormal = 80.0;
+
   late Future<void> _initialization;
   final ScrollController? _scrollController = ScrollController();
+
+  final Map<String, List<SensorReading>> _moduleReadings = {
+    'module1': [],
+    'module2': [],
+    'module3': [],
+  };
 
   void _setupModuleListeners() {
     try {
@@ -98,6 +110,7 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   void initState() {
     super.initState();
+    _loadRangeSettings();
     NotificationService.initialize();
     _initialization = _initializeData();
   }
@@ -126,6 +139,30 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _loadNonCriticalData() async {
     // Implementasi pemuatan data non-kritis (jika ada)
+  }
+
+  // Add method to load range settings
+  Future<void> _loadRangeSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _tempMinNormal = prefs.getDouble('tempMinNormal') ?? 25.0;
+      _tempMaxNormal = prefs.getDouble('tempMaxNormal') ?? 35.0;
+      _humidityMinNormal = prefs.getDouble('humidityMinNormal') ?? 60.0;
+      _humidityMaxNormal = prefs.getDouble('humidityMaxNormal') ?? 80.0;
+    });
+  }
+
+  void _setupRangeSettingsListener() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.reload().then((_) {
+        setState(() {
+          _tempMinNormal = prefs.getDouble('tempMinNormal') ?? 25.0;
+          _tempMaxNormal = prefs.getDouble('tempMaxNormal') ?? 35.0;
+          _humidityMinNormal = prefs.getDouble('humidityMinNormal') ?? 60.0;
+          _humidityMaxNormal = prefs.getDouble('humidityMaxNormal') ?? 80.0;
+        });
+      });
+    });
   }
 
   @override
@@ -258,17 +295,26 @@ class _DashboardViewState extends State<DashboardView> {
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Expanded(
-                                    child: _buildStatCard("Modul Aktif", "3",
-                                        Icons.memory, Colors.green)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 1",
+                                  Icons.memory,
+                                  Colors.green,
+                                  _checkModuleStatus('module1'),
+                                )),
                                 Expanded(
-                                    child: _buildStatCard(
-                                        "Suhu Rata-rata",
-                                        "29°C",
-                                        Icons.thermostat,
-                                        Colors.orange)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 2",
+                                  Icons.memory,
+                                  Colors.orange,
+                                  _checkModuleStatus('module2'),
+                                )),
                                 Expanded(
-                                    child: _buildStatCard("Kelembapan", "65%",
-                                        Icons.water_drop, Colors.blue)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 3",
+                                  Icons.memory,
+                                  Colors.blue,
+                                  _checkModuleStatus('module3'),
+                                )),
                               ],
                             ),
                           ),
@@ -571,6 +617,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _refreshData() async {
     try {
+      _setupRangeSettingsListener(); // Add this line
       setState(() {
         _moduleAlerts.updateAll((key, value) => false);
       });
@@ -580,6 +627,12 @@ class _DashboardViewState extends State<DashboardView> {
     } catch (e) {
       _showErrorDialog('Gagal memperbarui data: $e');
     }
+  }
+
+  // Tambahkan method untuk refresh settings
+  void _refreshSettings() {
+    _loadRangeSettings();
+    setState(() {});
   }
 
   void _showErrorDialog(String message) {
@@ -601,6 +654,11 @@ class _DashboardViewState extends State<DashboardView> {
   void _checkTemperature(String moduleId, List<SensorReading> readings) {
     try {
       if (readings.isNotEmpty) {
+        _setupRangeSettingsListener(); // Add this line to update ranges
+        setState(() {
+          _moduleReadings[moduleId] = readings;
+        });
+
         final latest = readings.last;
 
         SharedPreferences.getInstance().then((prefs) {
@@ -684,8 +742,26 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
+  Map<String, bool> _checkModuleStatus(String moduleId) {
+    final readings = _moduleReadings[moduleId];
+    if (readings == null || readings.isEmpty) {
+      return {
+        'tempNormal': true,
+        'humidityNormal': true,
+      };
+    }
+
+    final latest = readings.last;
+    return {
+      'tempNormal': latest.temperature >= _tempMinNormal &&
+          latest.temperature <= _tempMaxNormal,
+      'humidityNormal': latest.humidity >= _humidityMinNormal &&
+          latest.humidity <= _humidityMaxNormal,
+    };
+  }
+
+  Widget _buildModuleStatusCard(
+      String title, IconData icon, Color color, Map<String, bool> status) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -702,22 +778,56 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
+            Icon(icon, size: 24, color: color),
             const SizedBox(height: 8),
             Text(
               title,
               style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black),
-              textAlign: TextAlign.center,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.thermostat,
+                  color: status['tempNormal']! ? Colors.green : Colors.red,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status['tempNormal']! ? 'Suhu Normal' : 'Suhu Tidak Normal',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: status['tempNormal']! ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold, color: color),
-              textAlign: TextAlign.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.water_drop,
+                  color: status['humidityNormal']! ? Colors.green : Colors.red,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status['humidityNormal']!
+                      ? 'Kelembaban Normal'
+                      : 'Kelembaban Tidak Normal',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color:
+                        status['humidityNormal']! ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
