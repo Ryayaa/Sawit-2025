@@ -145,7 +145,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(Icons.person, size: 50, color: Color.fromARGB(255, 59, 55, 55)),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/google_icon.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(

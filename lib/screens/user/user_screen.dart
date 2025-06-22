@@ -142,7 +142,10 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
     TextEditingController emailController = TextEditingController(text: userData['email']);
     TextEditingController phoneController = TextEditingController(text: userData['nomor_telepon']);
     TextEditingController addressController = TextEditingController(text: userData['alamat']);
-    TextEditingController passwordController = TextEditingController(); // Tambahan
+    // TextEditingController passwordController = TextEditingController(); // Tambahan
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
+
 
     showDialog(
       context: context,
@@ -165,7 +168,10 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                   _buildTextField('Email', emailController, readOnly: true),
                   _buildTextField('Nomor Telepon', phoneController),
                   _buildTextField('Alamat', addressController),
-                  _buildTextField('Password', passwordController),
+                  // _buildTextField('Password', passwordController),
+                  _buildTextField('Password Lama', oldPasswordController),
+                  _buildTextField('Password Baru', newPasswordController),
+
 
                 ],
               ),
@@ -180,35 +186,53 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
                 onPressed: () async {
-                String userId = userData['id'];
-                DatabaseReference userRef = FirebaseDatabase.instance.ref().child('User').child(userId);
+  String userId = userData['id'];
+  String oldPassword = oldPasswordController.text.trim();
+  String newPassword = newPasswordController.text.trim();
+  String email = emailController.text.trim();
 
-                await userRef.update({
-                  'name': nameController.text.trim(),
-                  'nomor_telepon': phoneController.text.trim(),
-                  'alamat': addressController.text.trim(),
-                  if (passwordController.text.trim().isNotEmpty)
-                    'password': passwordController.text.trim(),
-                });
+  // Update data profil ke Firebase Realtime Database
+  DatabaseReference userRef = FirebaseDatabase.instance.ref().child('User').child(userId);
 
-                // Ubah password juga di Firebase Auth (jika user saat ini yang sedang login yang diubah)
-                if (passwordController.text.trim().isNotEmpty) {
-                  try {
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user != null && user.email == emailController.text.trim()) {
-                      await user.updatePassword(passwordController.text.trim());
-                    }
-                  } catch (e) {
-                    debugPrint("Gagal ubah password: $e");
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Gagal mengubah password di Authentication")),
-                    );
-                  }
-                }
+  await userRef.update({
+    'name': nameController.text.trim(),
+    'nomor_telepon': phoneController.text.trim(),
+    'alamat': addressController.text.trim(),
+    if (newPassword.isNotEmpty) 'password': newPassword,
+  });
 
-                Navigator.pop(context);
-                _fetchUsersFromFirebase();
-              },
+  // 🔐 Update password di Firebase Authentication (jika ini user yang sedang login)
+  if (newPassword.isNotEmpty) {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && user.email == email) {
+        // 🔐 Re-authenticate sebelum ubah password
+        final cred = EmailAuthProvider.credential(
+          email: email,
+          password: oldPassword,
+        );
+
+        await user.reauthenticateWithCredential(cred);
+        await user.updatePassword(newPassword);
+
+        // Optional: tampilkan pesan sukses
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password berhasil diubah di Authentication")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Gagal ubah password: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Gagal mengubah password di Authentication")),
+      );
+    }
+  }
+
+  Navigator.pop(context);
+  _fetchUsersFromFirebase();
+},
+
 
                 child: const Text('Simpan'),
               ),
