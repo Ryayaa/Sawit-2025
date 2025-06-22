@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+
 import 'package:otp_text_field/otp_text_field.dart';
 import 'package:otp_text_field/style.dart';
 import 'package:admin/screens/widgets/profile_row.dart';
 import 'package:admin/screens/main/components/side_menu_user.dart';
 
-class ProfileUser extends StatefulWidget {
-  const ProfileUser({Key? key}) : super(key: key);
+class ProfileUserPage extends StatefulWidget {
+  const ProfileUserPage({Key? key}) : super(key: key);
 
   @override
-  State<ProfileUser> createState() => _ProfileUserState();
+  State<ProfileUserPage> createState() => _ProfileUserPageState();
 }
+
 
 class _ProfileUserState extends State<ProfileUser> {
   final DatabaseReference _dbRef =
@@ -37,6 +39,7 @@ class _ProfileUserState extends State<ProfileUser> {
       }
     }
   }
+
 
   void _showResetPasswordDialog(BuildContext context) {
     String? verificationId;
@@ -161,15 +164,21 @@ class _ProfileUserState extends State<ProfileUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF6C63FF),
-      bottomNavigationBar: _buildBottomNavBar(),
+      backgroundColor: Colors.white,
       drawer: const SideMenuUser(),
-      body: Column(
-        children: [
-          _buildHeader(context),
-          const SizedBox(height: 20),
-          _buildProfileCard(context),
-        ],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFFF1F1F1)),
+        title: const Text(
+          "Profil",
+          style: TextStyle(
+            color: Color(0xFF3A7D44),
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        centerTitle: true,
       ),
     );
   }
@@ -188,7 +197,7 @@ class _ProfileUserState extends State<ProfileUser> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _profileInfoRow(IconData icon, String label, String value) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -201,17 +210,16 @@ class _ProfileUserState extends State<ProfileUser> {
           bottomRight: Radius.circular(40),
         ),
       ),
-      padding: const EdgeInsets.only(top: 50, bottom: 40),
-      child: Stack(
+      child: Row(
         children: [
-          Positioned(
-            left: 16,
-            top: 1,
-            child: Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
+          Icon(icon, color: Colors.grey[600], size: 22),
+          const SizedBox(width: 16),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
             ),
           ),
           Center(

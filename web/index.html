@@ -16,138 +16,81 @@
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: url('assets/sawitkebun.jpg') center center / cover no-repeat fixed;
-      overflow: hidden;
+      background: #fff;
+      margin: 0;
+      padding: 0;
       height: 100vh;
       min-height: 100vh;
-      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #loading_container {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.18);
-      z-index: 9999;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      opacity: 1;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
-      overflow: hidden;
-    }
-
-    .logo-glow {
-      display: flex;
       justify-content: center;
-      align-items: center;
-      margin-bottom: 32px;
-      animation: logoSpin 2.5s linear infinite;
-      filter: drop-shadow(0 0 32px #f27329cc);
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      transition: opacity 0.5s;
     }
 
-    .logo-glow img {
-      width: 180px;
-      max-width: 90vw;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.7);
-      box-shadow: 0 8px 32px 0 rgba(242,115,41,0.12);
-      animation: logoGlow 2s alternate infinite;
-    }
-
-    @keyframes logoSpin {
-      0% { transform: rotate(-3deg);}
-      100% { transform: rotate(3deg);}
-    }
-
-    @keyframes logoGlow {
-      0% { box-shadow: 0 0 32px 0 #f2732940; }
-      100% { box-shadow: 0 0 64px 8px #f27329cc; }
+    .logo-simple img {
+      width: 300px;
+      height: 300px;
+      object-fit: contain;
+      margin-bottom: 18px;
     }
 
     .loading-text {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.2em;
-      text-shadow: 0 2px 16px #ffffffcc, 0 1px 8px rgb(255, 255, 255);
+      font-size: 2rem;
+      font-weight: 600;
+      color: #3a7d44;
       margin-bottom: 18px;
-      background: linear-gradient(90deg, #ffffff 30%, #ffffff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmer 2s infinite linear;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -400px 0; }
-      100% { background-position: 400px 0; }
+      letter-spacing: 0.1em;
     }
 
     .progress-bar {
-      width: 180px;
-      height: 5px;
-      background: #f9e79f;
-      border-radius: 3px;
+      width: 100px;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
       overflow: hidden;
-      margin: 0 auto 24px auto;
-      box-shadow: 0 2px 8px #f2732933;
-      position: relative;
+      margin-bottom: 8px;
     }
 
     .progress-bar-inner {
       height: 100%;
       width: 0;
-      background: linear-gradient(90deg, #f27329 0%, #3a7d44 100%);
-      border-radius: 3px;
-      animation: progressAnim 2.5s cubic-bezier(.4,0,.2,1) infinite;
+      background: #3a7d44;
+      border-radius: 2px;
+      animation: progressAnim 1.2s linear infinite;
     }
 
     @keyframes progressAnim {
       0% { width: 0; }
-      80% { width: 100%; }
-      100% { width: 0; }
-    }
-
-    .blur-top, .blur-bottom {
-      position: absolute;
-      left: 0; right: 0;
-      height: 120px;
-      z-index: 0;
-      pointer-events: none;
-      background: linear-gradient(180deg, #fff8 60%, transparent 100%);
-      filter: blur(4px);
-    }
-
-    .blur-bottom {
-      top: unset;
-      bottom: 0;
-      background: linear-gradient(0deg, #fff8 60%, transparent 100%);
-    }
-
-    .blur-top { top: 0; }
-
-    @media (max-width: 600px) {
-      .logo-glow img { width: 120px; }
-      .progress-bar { width: 120px; }
-      .loading-text { font-size: 1.3rem; }
+      100% { width: 100%; }
     }
   </style>
 </head>
 
 <body>
   <div id="loading_container">
-    <div class="logo-glow">
+    <div class="logo-simple">
       <img src="assets/images/logo1sawit.png" alt="Logo" />
     </div>
+    <div class="loading-text">I-SAWIT</div>
     <div class="progress-bar">
       <div class="progress-bar-inner"></div>
     </div>
-    <div class="loading-text typing">I-SAWIT</div>
-    <div class="blur-top"></div>
-    <div class="blur-bottom"></div>
   </div>
   <script>
-    // Fade out loading
     window.onload = function () {
       setTimeout(function () {
         var loadingIndicator = document.getElementById("loading_container");
@@ -155,9 +98,9 @@
           loadingIndicator.style.opacity = 0;
           setTimeout(function () {
             loadingIndicator.remove();
-          }, 700);
+          }, 500);
         }
-      }, 1200); // loading hanya 1.2 detik
+      }, 1000); // loading hanya 1 detik
     };
   </script>
   <script src="main.dart.js" type="application/javascript"></script>

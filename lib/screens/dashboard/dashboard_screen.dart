@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => MenuAppController(), // Perbaikan provider
+          create: (_) => MenuAppController(),
           lazy: true,
         ),
         ChangeNotifierProvider(
@@ -36,7 +36,7 @@ class DashboardScreen extends StatelessWidget {
           lazy: true,
         ),
       ],
-      child: const DashboardView(), // Tambahkan const
+      child: const DashboardView(),
     );
   }
 }
@@ -60,20 +60,30 @@ class _DashboardViewState extends State<DashboardView> {
     'module3_humidity': false,
   };
 
+  // Normal range thresholds
+  double _tempMinNormal = 25.0;
+  double _tempMaxNormal = 35.0;
+  double _humidityMinNormal = 60.0;
+  double _humidityMaxNormal = 80.0;
+
   late Future<void> _initialization;
   final ScrollController? _scrollController = ScrollController();
+
+  final Map<String, List<SensorReading>> _moduleReadings = {
+    'module1': [],
+    'module2': [],
+    'module3': [],
+  };
 
   void _setupModuleListeners() {
     try {
       _subscriptions = ['module1'].map((moduleId) {
-        // Start with only one module
         return _firebaseService.getModuleData(moduleId).listen(
               (data) => _checkTemperature(moduleId, data),
               onError: (error) => print('Error listening to $moduleId: $error'),
             );
       }).toList();
 
-      // Load other modules after delay
       Future.delayed(const Duration(seconds: 2), () {
         _addRemainingModuleListeners();
       });
@@ -100,30 +110,26 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   void initState() {
     super.initState();
+    _loadRangeSettings();
     NotificationService.initialize();
     _initialization = _initializeData();
   }
 
   Future<void> _initializeData() async {
     try {
-      // Load critical data first
       await Future.wait([
         NotificationService.initialize(),
         _loadCriticalData(),
       ]);
-
-      // Load non-critical data after UI is shown
       Future.delayed(const Duration(milliseconds: 100), () {
         _loadNonCriticalData();
       });
     } catch (e) {
       print('Error initializing data: $e');
-      // Handle initialization error
     }
   }
 
   Future<void> _loadCriticalData() async {
-    // Load only essential data for initial render
     try {
       _setupModuleListeners();
     } catch (e) {
@@ -133,6 +139,30 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _loadNonCriticalData() async {
     // Implementasi pemuatan data non-kritis (jika ada)
+  }
+
+  // Add method to load range settings
+  Future<void> _loadRangeSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _tempMinNormal = prefs.getDouble('tempMinNormal') ?? 25.0;
+      _tempMaxNormal = prefs.getDouble('tempMaxNormal') ?? 35.0;
+      _humidityMinNormal = prefs.getDouble('humidityMinNormal') ?? 60.0;
+      _humidityMaxNormal = prefs.getDouble('humidityMaxNormal') ?? 80.0;
+    });
+  }
+
+  void _setupRangeSettingsListener() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.reload().then((_) {
+        setState(() {
+          _tempMinNormal = prefs.getDouble('tempMinNormal') ?? 25.0;
+          _tempMaxNormal = prefs.getDouble('tempMaxNormal') ?? 35.0;
+          _humidityMinNormal = prefs.getDouble('humidityMinNormal') ?? 60.0;
+          _humidityMaxNormal = prefs.getDouble('humidityMaxNormal') ?? 80.0;
+        });
+      });
+    });
   }
 
   @override
@@ -163,7 +193,7 @@ class _DashboardViewState extends State<DashboardView> {
           }
 
           return Container(
-            color: Colors.white, // Background putih polos
+            color: Colors.white,
             child: SafeArea(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,17 +295,26 @@ class _DashboardViewState extends State<DashboardView> {
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 Expanded(
-                                    child: _buildStatCard("Modul Aktif", "3",
-                                        Icons.memory, Colors.green)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 1",
+                                  Icons.memory,
+                                  Colors.green,
+                                  _checkModuleStatus('module1'),
+                                )),
                                 Expanded(
-                                    child: _buildStatCard(
-                                        "Suhu Rata-rata",
-                                        "29°C",
-                                        Icons.thermostat,
-                                        Colors.orange)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 2",
+                                  Icons.memory,
+                                  Colors.orange,
+                                  _checkModuleStatus('module2'),
+                                )),
                                 Expanded(
-                                    child: _buildStatCard("Kelembapan", "65%",
-                                        Icons.water_drop, Colors.blue)),
+                                    child: _buildModuleStatusCard(
+                                  "Module 3",
+                                  Icons.memory,
+                                  Colors.blue,
+                                  _checkModuleStatus('module3'),
+                                )),
                               ],
                             ),
                           ),
@@ -296,7 +335,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 ),
                                 const SizedBox(height: 8),
                                 LinearProgressIndicator(
-                                  value: 0.71, // misal 71% dari target
+                                  value: 0.71,
                                   minHeight: 10,
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -338,8 +377,7 @@ class _DashboardViewState extends State<DashboardView> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Card(
-                              color: const Color(
-                                  0xFFF5F6FA), // abu-abu muda, sangat soft
+                              color: const Color(0xFFF5F6FA),
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -360,8 +398,7 @@ class _DashboardViewState extends State<DashboardView> {
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Card(
-                              color: const Color(
-                                  0xFFF5F6FA), // abu-abu muda, sangat soft
+                              color: const Color(0xFFF5F6FA),
                               elevation: 2,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -457,7 +494,6 @@ class _DashboardViewState extends State<DashboardView> {
                                   );
                                 }
 
-                                // Tambahkan pengecekan data kosong
                                 if (!snapshot.hasData ||
                                     (snapshot.data?.latitude == 0 &&
                                         snapshot.data?.longitude == 0)) {
@@ -503,11 +539,8 @@ class _DashboardViewState extends State<DashboardView> {
                                               options: MapOptions(
                                                 center: point,
                                                 zoom: 15,
-                                                // Add these options for interactivity
-                                                minZoom:
-                                                    3, // Minimum zoom level
-                                                maxZoom:
-                                                    18, // Maximum zoom level
+                                                minZoom: 3,
+                                                maxZoom: 18,
                                                 enableScrollWheel: true,
                                                 interactionOptions:
                                                     const InteractionOptions(
@@ -584,18 +617,22 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _refreshData() async {
     try {
+      _setupRangeSettingsListener(); // Add this line
       setState(() {
         _moduleAlerts.updateAll((key, value) => false);
       });
 
-      // Cancel existing subscriptions
       await Future.wait(_subscriptions?.map((s) => s.cancel()) ?? []);
-
-      // Setup new listeners
       _setupModuleListeners();
     } catch (e) {
       _showErrorDialog('Gagal memperbarui data: $e');
     }
+  }
+
+  // Tambahkan method untuk refresh settings
+  void _refreshSettings() {
+    _loadRangeSettings();
+    setState(() {});
   }
 
   void _showErrorDialog(String message) {
@@ -617,6 +654,11 @@ class _DashboardViewState extends State<DashboardView> {
   void _checkTemperature(String moduleId, List<SensorReading> readings) {
     try {
       if (readings.isNotEmpty) {
+        _setupRangeSettingsListener(); // Add this line to update ranges
+        setState(() {
+          _moduleReadings[moduleId] = readings;
+        });
+
         final latest = readings.last;
 
         SharedPreferences.getInstance().then((prefs) {
@@ -700,8 +742,26 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
+  Map<String, bool> _checkModuleStatus(String moduleId) {
+    final readings = _moduleReadings[moduleId];
+    if (readings == null || readings.isEmpty) {
+      return {
+        'tempNormal': true,
+        'humidityNormal': true,
+      };
+    }
+
+    final latest = readings.last;
+    return {
+      'tempNormal': latest.temperature >= _tempMinNormal &&
+          latest.temperature <= _tempMaxNormal,
+      'humidityNormal': latest.humidity >= _humidityMinNormal &&
+          latest.humidity <= _humidityMaxNormal,
+    };
+  }
+
+  Widget _buildModuleStatusCard(
+      String title, IconData icon, Color color, Map<String, bool> status) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -718,22 +778,56 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
+            Icon(icon, size: 24, color: color),
             const SizedBox(height: 8),
             Text(
               title,
               style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black),
-              textAlign: TextAlign.center,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.thermostat,
+                  color: status['tempNormal']! ? Colors.green : Colors.red,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status['tempNormal']! ? 'Suhu Normal' : 'Suhu Tidak Normal',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: status['tempNormal']! ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold, color: color),
-              textAlign: TextAlign.center,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.water_drop,
+                  color: status['humidityNormal']! ? Colors.green : Colors.red,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status['humidityNormal']!
+                      ? 'Kelembaban Normal'
+                      : 'Kelembaban Tidak Normal',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color:
+                        status['humidityNormal']! ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

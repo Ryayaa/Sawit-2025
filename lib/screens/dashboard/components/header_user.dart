@@ -50,7 +50,7 @@ class ProfileCard extends StatelessWidget {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => ProfileUser(),
+              pageBuilder: (context, animation, secondaryAnimation) => ProfileUserPage(),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,

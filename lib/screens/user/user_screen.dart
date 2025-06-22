@@ -4,6 +4,11 @@ import 'package:admin/screens/main/components/side_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
+const kPrimaryColor = Color(0xFF3A7D44);
+const kAccentColor = Color(0xFF91C788);
+const kCardBackground = Color(0xFFF9F9F9);
+const kShadowColor = Color(0xFFE0E0E0);
+
 class UserScreen extends StatefulWidget {
   const UserScreen({Key? key}) : super(key: key);
 
@@ -46,26 +51,24 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  backgroundColor: const Color(0xFF1E1E1E),
-  appBar: AppBar(
-    backgroundColor: const Color(0xFF121212),
-    title: const Text('Data User', style: TextStyle(fontWeight: FontWeight.bold)),
-    centerTitle: true,
-    elevation: 4,
-    shadowColor: Colors.black45,
-    // Tambahkan tombol menu (ikon drawer) secara eksplisit:
-    leading: Builder(
-      builder: (context) => IconButton(
-        icon: const Icon(Icons.menu, color: Colors.amber),
-        onPressed: () => Scaffold.of(context).openDrawer(),
+      backgroundColor: kCardBackground,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('Data User', style: TextStyle(fontWeight: FontWeight.bold, color: kPrimaryColor)),
+        centerTitle: true,
+        elevation: 4,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: kPrimaryColor),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
       ),
-    ),
-  ),
-  drawer: const SideMenu(),
+      drawer: const SideMenu(),
       body: _userList.isEmpty
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
               ),
             )
           : ListView.builder(
@@ -76,37 +79,63 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeInOut,
                   child: Card(
-                    color: const Color(0xFF2A2A2A),
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    color: Colors.white,
+                    elevation: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shadowColor: kShadowColor,
                     child: Theme(
                       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
-                        leading: const Icon(Icons.person, color: Colors.amber),
-                        iconColor: Colors.white,
-                        collapsedIconColor: Colors.amberAccent,
-                        textColor: Colors.white,
-                        collapsedTextColor: Colors.white,
+                        leading: CircleAvatar(
+                          backgroundColor: kAccentColor,
+                          child: Icon(Icons.person, color: kPrimaryColor),
+                        ),
+                        iconColor: kPrimaryColor,
+                        collapsedIconColor: kPrimaryColor,
+                        textColor: kPrimaryColor,
+                        collapsedTextColor: Colors.black87,
                         title: Text(
                           user['name'],
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: kPrimaryColor),
                         ),
-                        subtitle: Text(user['email'], style: const TextStyle(color: Colors.grey)),
+                        subtitle: Text(user['email'], style: const TextStyle(color: Colors.black54)),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("📞 ${user['nomor_telepon']}", style: const TextStyle(color: Colors.white)),
-                                const SizedBox(height: 4),
-                                Text("🏠 ${user['alamat']}", style: const TextStyle(color: Colors.white70)),
-                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.phone, color: kAccentColor, size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      user['nomor_telepon'],
+                                      style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.home, color: kAccentColor, size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        user['alamat'],
+                                        style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
                                 Chip(
-                                  label: Text("Role: ${user['role']}",
-                                      style: const TextStyle(color: Colors.white)),
-                                  backgroundColor: Colors.deepPurple,
+                                  label: Text(
+                                    "Role: ${user['role']}",
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                  backgroundColor: kPrimaryColor,
                                 ),
                               ],
                             ),
@@ -118,11 +147,11 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                                 onPressed: () {
                                   _showEditDialog(user);
                                 },
-                                icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                                label: const Text('Edit', style: TextStyle(color: Colors.blueAccent)),
+                                icon: const Icon(Icons.edit, color: kAccentColor),
+                                label: const Text('Edit', style: TextStyle(color: kAccentColor)),
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  overlayColor: Colors.blue.withOpacity(0.1),
+                                  foregroundColor: kPrimaryColor,
+                                  overlayColor: kAccentColor.withOpacity(0.1),
                                 ),
                               ),
                             ],
@@ -159,8 +188,9 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
             curve: Curves.easeOutBack,
           ),
           child: AlertDialog(
-            backgroundColor: const Color(0xFF2C2C2C),
-            title: const Text('Edit Data User', style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Edit Data User', style: TextStyle(color: kPrimaryColor)),
             content: SingleChildScrollView(
               child: Column(
                 children: [
@@ -181,10 +211,10 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Batal'),
+                child: const Text('Batal', style: TextStyle(color: kPrimaryColor)),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor),
                 onPressed: () async {
   String userId = userData['id'];
   String oldPassword = oldPasswordController.text.trim();
@@ -232,8 +262,6 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
   Navigator.pop(context);
   _fetchUsersFromFirebase();
 },
-
-
                 child: const Text('Simpan'),
               ),
             ],
@@ -249,15 +277,19 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
       child: TextField(
         controller: controller,
         readOnly: readOnly,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.amber),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
+          labelStyle: const TextStyle(color: kPrimaryColor),
+          filled: true,
+          fillColor: kCardBackground,
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: kAccentColor.withOpacity(0.5)),
+            borderRadius: BorderRadius.circular(12),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.amber),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
