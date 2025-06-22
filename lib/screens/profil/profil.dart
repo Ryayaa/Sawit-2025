@@ -147,20 +147,115 @@ class _ProfilePageState extends State<ProfilePage> {
               fontSize: 15,
             ),
           ),
-          const Spacer(),
-          Expanded( // Ganti Flexible menjadi Expanded
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 15,
-              ),
-              overflow: TextOverflow.ellipsis, // agar tidak overflow
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/google_icon.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  userData?['name'] ?? 'Loading...',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: userData == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Profil Saya',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 16),
+                ProfileRow(label: 'EMAIL', value: userData?['email'] ?? '', actionText: ''),
+                ProfileRow(label: 'NO HP', value: userData?['nomor_telepon'] ?? '-', actionText: ''),
+                ProfileRow(label: 'ALAMAT', value: userData?['alamat'] ?? '-', actionText: ''),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 400),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const EditProfilPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            final offsetAnimation = Tween<Offset>(
+                              begin: const Offset(0.0, 1.0),
+                              end: Offset.zero,
+                            ).animate(animation);
+                            final fadeAnimation = Tween<double>(
+                              begin: 0.0,
+                              end: 1.0,
+                            ).animate(animation);
+
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: FadeTransition(opacity: fadeAnimation, child: child),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit Profil', style: TextStyle(fontSize: 14)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

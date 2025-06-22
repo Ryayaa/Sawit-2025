@@ -1,4 +1,3 @@
-// widgets/profile_row.dart
 import 'package:flutter/material.dart';
 import 'email_verification_dialog.dart';
 
@@ -6,12 +5,14 @@ class ProfileRow extends StatelessWidget {
   final String label;
   final String value;
   final String actionText;
+  final VoidCallback? onActionTap; // ini ditambahkan
 
   const ProfileRow({
     Key? key,
     required this.label,
     required this.value,
     required this.actionText,
+    this.onActionTap, // ini ditambahkan
   }) : super(key: key);
 
   @override
@@ -54,6 +55,9 @@ class ProfileRow extends StatelessWidget {
                   onPressed: () {
                     if (actionText == 'CHANGE') {
                       showEmailVerificationDialog(context);
+                    } else {
+                      // jalankan custom action jika bukan 'CHANGE'
+                      if (onActionTap != null) onActionTap!();
                     }
                   },
                   style: TextButton.styleFrom(
