@@ -14,8 +14,7 @@ class ProfileUserPage extends StatefulWidget {
   State<ProfileUserPage> createState() => _ProfileUserPageState();
 }
 
-
-class _ProfileUserState extends State<ProfileUser> {
+class _ProfileUserPageState extends State<ProfileUserPage> {
   final DatabaseReference _dbRef =
       FirebaseDatabase.instance.ref().child('User');
   Map<String, dynamic>? userData;
@@ -39,7 +38,6 @@ class _ProfileUserState extends State<ProfileUser> {
       }
     }
   }
-
 
   void _showResetPasswordDialog(BuildContext context) {
     String? verificationId;
@@ -118,8 +116,8 @@ class _ProfileUserState extends State<ProfileUser> {
 
                     final user = FirebaseAuth.instance.currentUser;
                     await user?.reauthenticateWithCredential(credential);
-                    await user?.updatePassword(
-                        newPasswordController.text.trim());
+                    await user
+                        ?.updatePassword(newPasswordController.text.trim());
 
                     final uid = user!.uid;
                     await _dbRef.child(uid).update({
