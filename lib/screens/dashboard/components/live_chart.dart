@@ -11,7 +11,7 @@ class LiveChart extends StatelessWidget {
     required this.moduleName,
     required this.dataStream,
   }) : super(key: key);
-
+ 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<SensorReading>>(

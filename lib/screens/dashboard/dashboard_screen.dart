@@ -341,12 +341,12 @@ class _DashboardViewState extends State<DashboardView> {
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.green),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "71% tercapai dari target 100%",
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.black54),
-                                ),
+                                // const SizedBox(height: 4),
+                                // Text(
+                                //   "71% tercapai dari target 100%",
+                                //   style: TextStyle(
+                                //       fontSize: 12, color: Colors.black54),
+                                // ),
                               ],
                             ),
                           ),
