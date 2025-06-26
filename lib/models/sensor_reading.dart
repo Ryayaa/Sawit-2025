@@ -2,39 +2,39 @@ import 'package:flutter/material.dart';
 
 class SensorReading {
   final double temperature;
-  final double soilMoisture;
   final double humidity;
   final DateTime timestamp;
 
   SensorReading({
     required this.temperature,
-    required this.soilMoisture,
     required this.humidity,
     required this.timestamp,
   });
 
   factory SensorReading.fromJson(Map<String, dynamic> json) {
+    double parseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    int parseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return SensorReading(
-      temperature: _parseDoubleValue(json['temperature']),
-      soilMoisture: _parseDoubleValue(json['soilMoisture']),
-      humidity: _parseDoubleValue(json['humidity'] ?? '0.0'),
+      temperature: parseDouble(json['temperature']),
+      humidity: parseDouble(json['humidity']),
       timestamp: DateTime.fromMillisecondsSinceEpoch(
-          _parseIntValue(json['timestamp'])),
+        parseInt(json['timestamp']),
+      ),
     );
-  }
-
-  static double _parseDoubleValue(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is num) return value.toDouble();
-    if (value is String) return double.parse(value);
-    return 0.0;
-  }
-
-  static int _parseIntValue(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toInt();
-    if (value is String) return int.parse(value);
-    return 0;
   }
 }
 
@@ -121,8 +121,7 @@ class _SensorPageState extends State<SensorPage> {
                 return ListTile(
                   title: Text(
                     'Temperature: ${reading.temperature} °C, '
-                    'Humidity: ${reading.humidity} %, '
-                    'Soil Moisture: ${reading.soilMoisture} %',
+                    'Humidity: ${reading.humidity} %, ',
                   ),
                   subtitle: Text('Timestamp: ${reading.timestamp}'),
                   trailing: _buildAlertIcon(reading),

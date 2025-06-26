@@ -57,11 +57,11 @@ class FirebaseService {
       return data.entries.map((e) {
         final reading = e.value as Map<dynamic, dynamic>;
         return SensorReading(
-          temperature: (reading['temperature'] as num).toDouble(),
-          soilMoisture: (reading['soilMoisture'] as num).toDouble(),
-          humidity: (reading['humidity'] ?? 0.0) as double,
-          timestamp:
-              DateTime.fromMillisecondsSinceEpoch(reading['timestamp'] as int),
+          temperature: _parseDouble(reading['temperature']),
+          humidity: _parseDouble(reading['humidity']),
+          timestamp: DateTime.fromMillisecondsSinceEpoch(
+            _parseInt(reading['timestamp']),
+          ),
         );
       }).toList();
     } catch (e) {
@@ -76,7 +76,7 @@ class FirebaseService {
     try {
       await _database.child('$moduleId/readings').push().set({
         'temperature': reading.temperature,
-        'soilMoisture': reading.soilMoisture, // Changed from humidity
+        'humidity': reading.humidity,
         'timestamp': reading.timestamp.millisecondsSinceEpoch,
       });
     } catch (e) {
@@ -101,11 +101,11 @@ class FirebaseService {
       final data = Map<String, dynamic>.from(value.values.first as Map);
 
       return SensorReading(
-        temperature: (data['temperature'] as num).toDouble(),
-        soilMoisture: (data['soilMoisture'] as num).toDouble(),
-        humidity: (data['humidity'] ?? 0.0) as double,
-        timestamp:
-            DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
+        temperature: _parseDouble(data['temperature']),
+        humidity: _parseDouble(data['humidity']),
+        timestamp: DateTime.fromMillisecondsSinceEpoch(
+          _parseInt(data['timestamp']),
+        ),
       );
     } catch (e) {
       print('Error getting latest reading: $e');
@@ -115,25 +115,21 @@ class FirebaseService {
 
   // Stream untuk semua modul
   Stream<Map<String, List<SensorReading>>> getAllModulesData() {
-    return _database.child('modules').onValue.map((event) {
+    return _database.onValue.map((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
       if (data == null) return {};
 
       Map<String, List<SensorReading>> allModules = {};
 
       data.forEach((moduleId, moduleData) {
-        if (moduleData['readings'] != null) {
+        if (moduleData is Map && moduleData['readings'] != null) {
           final readings = moduleData['readings'] as Map<dynamic, dynamic>;
           List<SensorReading> moduleReadings = [];
-
           readings.forEach((key, value) {
             final reading = Map<String, dynamic>.from(value as Map);
-            reading['moduleId'] = moduleId;
             moduleReadings.add(SensorReading.fromJson(reading));
           });
-
-          allModules[moduleId] = moduleReadings
-            ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+          allModules[moduleId] = moduleReadings;
         }
       });
 
@@ -214,5 +210,22 @@ class FirebaseService {
       print('Error getting sensor data: $e');
       return null;
     }
+  }
+
+  // Helper parsing
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }

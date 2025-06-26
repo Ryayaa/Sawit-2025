@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../services/firebase_service.dart';
+import '../../../models/sensor_reading.dart';
 
 class RecentMeasurementsTable extends StatefulWidget {
-  final List<Map<String, dynamic>> initialMeasurements;
-
-  const RecentMeasurementsTable({
-    Key? key,
-    required this.initialMeasurements,
-  }) : super(key: key);
+  const RecentMeasurementsTable({Key? key}) : super(key: key);
 
   @override
   State<RecentMeasurementsTable> createState() =>
@@ -16,125 +13,175 @@ class RecentMeasurementsTable extends StatefulWidget {
 class _RecentMeasurementsTableState extends State<RecentMeasurementsTable> {
   final int itemsPerPage = 10;
   int _currentPage = 0;
-  late List<Map<String, dynamic>> _measurements;
-
-  @override
-  void initState() {
-    super.initState();
-    _measurements = widget.initialMeasurements;
-  }
-
-  @override
-  void didUpdateWidget(covariant RecentMeasurementsTable oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.initialMeasurements != oldWidget.initialMeasurements) {
-      setState(() {
-        _measurements = widget.initialMeasurements;
-      });
-    }
-  }
-
-  Widget buildPaginatedTable() {
-    final int totalPages = (_measurements.length / itemsPerPage).ceil();
-    final int startIndex = _currentPage * itemsPerPage;
-    final int endIndex = (startIndex + itemsPerPage > _measurements.length)
-        ? _measurements.length
-        : startIndex + itemsPerPage;
-
-    return Column(
-      children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columnSpacing: 28,
-            headingRowColor: MaterialStateProperty.all(Colors.blue.shade100),
-            columns: const [
-              DataColumn(label: Text('Modul')),
-              DataColumn(label: Text('Suhu (°C)')),
-              DataColumn(label: Text('Kelembapan (%)')),
-            ],
-            rows: _measurements
-                .sublist(startIndex, endIndex)
-                .map(
-                  (data) => DataRow(
-                    cells: [
-                      DataCell(
-                        Row(
-                          children: [
-                            Icon(Icons.memory,
-                                size: 18, color: Colors.green.shade700),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                data['module'].toString(),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          "${data['temperature']}°",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          "${data['soilMoisture']}%",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blueAccent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-                .toList(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        PaginationControls(
-          currentPage: _currentPage,
-          totalPages: totalPages,
-          onPageChanged: (page) => setState(() => _currentPage = page),
-        ),
-      ],
-    );
-  }
+  final FirebaseService _firebaseService = FirebaseService();
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final double fontSize = isMobile ? 12 : 14;
+    final double headerFontSize = isMobile ? 13 : 16;
+    final EdgeInsetsGeometry cellPadding = isMobile
+        ? const EdgeInsets.symmetric(vertical: 8, horizontal: 4)
+        : const EdgeInsets.symmetric(vertical: 12, horizontal: 12);
+
+    return StreamBuilder<Map<String, List<SensorReading>>>(
+      stream: _firebaseService.getAllModulesData(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(child: Text('Terjadi kesalahan'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        // Ambil data terbaru dari setiap modul
+        final List<Map<String, dynamic>> measurements = [];
+        snapshot.data!.forEach((moduleId, readings) {
+          if (readings.isNotEmpty) {
+            final latest = readings.last;
+            measurements.add({
+              'module': moduleId,
+              'temperature': latest.temperature,
+              'humidity': latest.humidity,
+            });
+          }
+        });
+
+        // Urutkan berdasarkan nama modul
+        measurements.sort(
+            (a, b) => a['module'].toString().compareTo(b['module'].toString()));
+
+        final int totalPages = (measurements.length / itemsPerPage).ceil();
+        final int startIndex = _currentPage * itemsPerPage;
+        final int endIndex = (startIndex + itemsPerPage > measurements.length)
+            ? measurements.length
+            : startIndex + itemsPerPage;
+
+        if (measurements.isEmpty) {
+          return const Center(child: Text('Tidak ada data terbaru.'));
+        }
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Data Terbaru",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: Colors.black87,
+            Padding(
+              padding: isMobile
+                  ? const EdgeInsets.only(left: 8, top: 8, bottom: 8)
+                  : const EdgeInsets.only(left: 16, top: 16, bottom: 16),
+              child: Text(
+                "Data Terbaru",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 18 : 22,
+                  color: Colors.black87,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            buildPaginatedTable(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: isMobile ? 16 : 32,
+                headingRowColor:
+                    MaterialStateProperty.all(Colors.blue.shade100),
+                columns: [
+                  DataColumn(
+                    label: Padding(
+                      padding: cellPadding,
+                      child: Text('Modul',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: headerFontSize)),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Padding(
+                      padding: cellPadding,
+                      child: Text('Suhu (°C)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: headerFontSize)),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Padding(
+                      padding: cellPadding,
+                      child: Text('Kelembapan (%)',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: headerFontSize)),
+                    ),
+                  ),
+                ],
+                rows: measurements
+                    .sublist(startIndex, endIndex)
+                    .map(
+                      (data) => DataRow(
+                        cells: [
+                          DataCell(
+                            Padding(
+                              padding: cellPadding,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.memory,
+                                      size: isMobile ? 16 : 20,
+                                      color: Colors.green.shade700),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      data['module'].toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                        fontSize: fontSize,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: cellPadding,
+                              child: Text(
+                                "${data['temperature']}°",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.redAccent,
+                                  fontSize: fontSize,
+                                ),
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: cellPadding,
+                              child: Text(
+                                "${data['humidity']}%",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blueAccent,
+                                  fontSize: fontSize,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            PaginationControls(
+              currentPage: _currentPage,
+              totalPages: totalPages,
+              onPageChanged: (page) => setState(() => _currentPage = page),
+            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

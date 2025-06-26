@@ -88,15 +88,19 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       StreamBuilder<Map<String, dynamic>>(
                         stream: AuthService().getUserData(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return const CircularProgressIndicator();
                           }
-                          final userData = snapshot.data ?? {'name': 'User', 'role': 2};
+                          final userData =
+                              snapshot.data ?? {'name': 'User', 'role': 2};
                           final userName = userData['name'] ?? 'User';
-                          final roleText = userData['role'] == 1 ? 'Admin' : 'User';
+                          final roleText =
+                              userData['role'] == 1 ? 'Admin' : 'User';
 
                           return Padding(
-                            padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 4.0),
+                            padding: const EdgeInsets.only(
+                                left: 16.0, top: 16.0, bottom: 4.0),
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -117,7 +121,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       Card(
                         color: Colors.white,
                         elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         shadowColor: kShadowColor,
                         child: const Padding(
                           padding: EdgeInsets.all(16.0),
@@ -139,11 +144,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                                 child: _buildStatCard("Modul Aktif", "3",
                                     Icons.memory, Colors.green)),
                             Expanded(
-                                child: _buildStatCard(
-                                    "Suhu Rata-rata",
-                                    "29°C",
-                                    Icons.thermostat,
-                                    Colors.orange)),
+                                child: _buildStatCard("Suhu Rata-rata", "29°C",
+                                    Icons.thermostat, Colors.orange)),
                             Expanded(
                                 child: _buildStatCard("Kelembapan", "65%",
                                     Icons.water_drop, Colors.blue)),
@@ -170,8 +172,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                               value: 0.71,
                               minHeight: 10,
                               backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.green),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.green),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -251,34 +253,12 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       Card(
                         color: Colors.white,
                         elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         shadowColor: kShadowColor,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: StreamBuilder<Map<String, List<SensorReading>>>(
-                            stream: _firebaseService.getAllModulesData(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              }
-                              if (!snapshot.hasData) {
-                                return const Center(child: CircularProgressIndicator());
-                              }
-                              final allData = snapshot.data!;
-                              final measurements = allData.entries.map((e) {
-                                final lastReading = e.value.last;
-                                return {
-                                  'module': int.parse(e.key.replaceAll('module', '')),
-                                  'temperature': lastReading.temperature,
-                                  'soilMoisture': lastReading.soilMoisture,
-                                };
-                              }).toList();
-
-                              return RecentMeasurementsTable(
-                                initialMeasurements: measurements,
-                              );
-                            },
-                          ),
+                          child: RecentMeasurementsTable(),
                         ),
                       ),
                       const SizedBox(height: defaultPadding),
@@ -287,7 +267,8 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                       Card(
                         color: kPrimaryColor,
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         child: SizedBox(
                           height: 150,
                           width: double.infinity,
@@ -304,15 +285,13 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: Text(
                           "© 2025 I-SAWIT | All rights reserved",
-                          style: TextStyle(
-                              color: Colors.black38, fontSize: 12),
+                          style: TextStyle(color: Colors.black38, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                       ),
                       Text(
                         "Hubungi: admin@sawit.com | v1.0.0",
-                        style:
-                            TextStyle(color: Colors.black26, fontSize: 11),
+                        style: TextStyle(color: Colors.black26, fontSize: 11),
                         textAlign: TextAlign.center,
                       ),
                     ],

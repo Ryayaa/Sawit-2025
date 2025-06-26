@@ -22,6 +22,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final List<String> modules = ['All', 'Module 1', 'Module 2', 'Module 3'];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args['module'] != null) {
+      // Set filter module sesuai args['module']
+      selectedModule = args['module'];
+      // Panggil fungsi filter atau setState sesuai kebutuhan
+      _filterByModule(selectedModule);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
 
@@ -414,5 +426,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   List<DateTime> _getAllDateTimes() {
     return List.generate(15, (index) => DateTime.now().subtract(Duration(minutes: index * 5)));
+  }
+
+  void _filterByModule(String module) {
+    setState(() {
+      selectedModule = module;
+    });
   }
 }

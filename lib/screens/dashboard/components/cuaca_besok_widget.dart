@@ -25,10 +25,12 @@ class _CuacaBesokWidgetState extends State<CuacaBesokWidget> {
   Future<void> _loadWeatherData() async {
     try {
       final weatherData = await _weatherService.getWeatherData();
+      if (!mounted) return; // Tambahkan ini
       setState(() {
         _weatherData = weatherData;
       });
     } catch (e) {
+      if (!mounted) return; // Tambahkan ini juga untuk error
       print('Error loading weather data: $e');
     }
   }
@@ -137,14 +139,14 @@ class _CuacaBesokWidgetState extends State<CuacaBesokWidget> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                    _weatherData['ramalanBesok'],
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                    softWrap: true,
-                    overflow: TextOverflow.visible,
+                        _weatherData['ramalanBesok'],
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ],
                   ),
