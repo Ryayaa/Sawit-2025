@@ -23,7 +23,6 @@
       "-timestamp1": {
         "temperature": 29.0,
         "humidity": 68.0,
-        "soilMoisture": 70.0,
         "timestamp": 1714147200000
       }
     }

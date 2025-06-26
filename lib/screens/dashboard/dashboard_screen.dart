@@ -206,7 +206,8 @@ class _DashboardViewState extends State<DashboardView> {
                   Expanded(
                     flex: 5,
                     child: SingleChildScrollView(
-                      primary: false,
+                      controller: _scrollController, // Gunakan controller jika ingin, atau hapus jika tidak perlu
+                      physics: const ClampingScrollPhysics(), // Tambahkan ini agar scroll lebih smooth di mobile
                       padding: const EdgeInsets.all(defaultPadding),
                       child: Column(
                         children: [
@@ -221,7 +222,7 @@ class _DashboardViewState extends State<DashboardView> {
                               child: Header(),
                             ),
                           ),
-                          SizedBox(height: defaultPadding),
+                          const SizedBox(height: defaultPadding),
 
                           // Salam selamat datang
                           StreamBuilder<String>(
@@ -291,31 +292,46 @@ class _DashboardViewState extends State<DashboardView> {
                           // Statistik Ringkas
                           Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Expanded(
-                                    child: _buildModuleStatusCard(
-                                  "Module 1",
-                                  Icons.memory,
-                                  Colors.green,
-                                  _checkModuleStatus('module1'),
-                                )),
-                                Expanded(
-                                    child: _buildModuleStatusCard(
-                                  "Module 2",
-                                  Icons.memory,
-                                  Colors.orange,
-                                  _checkModuleStatus('module2'),
-                                )),
-                                Expanded(
-                                    child: _buildModuleStatusCard(
-                                  "Module 3",
-                                  Icons.memory,
-                                  Colors.blue,
-                                  _checkModuleStatus('module3'),
-                                )),
-                              ],
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                // Jika lebar layar < 400, kecilkan card dan font
+                                final isMobile = constraints.maxWidth < 400;
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 1",
+                                        Icons.memory,
+                                        Colors.green,
+                                        _checkModuleStatus('module1'),
+                                        isCompact: isMobile,
+                                      ),
+                                    ),
+                                    SizedBox(width: isMobile ? 4 : 12),
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 2",
+                                        Icons.memory,
+                                        Colors.orange,
+                                        _checkModuleStatus('module2'),
+                                        isCompact: isMobile,
+                                      ),
+                                    ),
+                                    SizedBox(width: isMobile ? 4 : 12),
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 3",
+                                        Icons.memory,
+                                        Colors.blue,
+                                        _checkModuleStatus('module3'),
+                                        isCompact: isMobile,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(height: defaultPadding),
@@ -364,9 +380,16 @@ class _DashboardViewState extends State<DashboardView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
-                                  moduleName: 'Modul 1',
+                                  moduleName: "Module 1",
                                   dataStream:
                                       _firebaseService.getModuleData('module1'),
+                                  onTapModule: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/history',
+                                      arguments: {'module': 'Module 1'}, // Gunakan format yang sama dengan filter
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -385,9 +408,16 @@ class _DashboardViewState extends State<DashboardView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
-                                  moduleName: 'Modul 2',
+                                  moduleName: "Module 2",
                                   dataStream:
                                       _firebaseService.getModuleData('module2'),
+                                  onTapModule: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/history',
+                                      arguments: {'module': 'module2'},
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -406,9 +436,16 @@ class _DashboardViewState extends State<DashboardView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
-                                  moduleName: 'Modul 3',
+                                  moduleName: "Module 3",
                                   dataStream:
                                       _firebaseService.getModuleData('module3'),
+                                  onTapModule: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/history',
+                                      arguments: {'module': 'module3'},
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -445,25 +482,7 @@ class _DashboardViewState extends State<DashboardView> {
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  RecentMeasurementsTable(
-                                    initialMeasurements: [
-                                      {
-                                        'module': 1,
-                                        'temperature': 30,
-                                        'soilMoisture': 68
-                                      },
-                                      {
-                                        'module': 2,
-                                        'temperature': 29,
-                                        'soilMoisture': 71
-                                      },
-                                      {
-                                        'module': 3,
-                                        'temperature': 28,
-                                        'soilMoisture': 69
-                                      },
-                                    ],
-                                  ),
+                                  RecentMeasurementsTable(),
                                 ],
                               ),
                             ),
@@ -761,15 +780,19 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildModuleStatusCard(
-      String title, IconData icon, Color color, Map<String, bool> status) {
+      String title, IconData icon, Color color, Map<String, bool> status,
+      {bool isCompact = false}) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        padding: const EdgeInsets.all(16),
-        constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
+        padding: EdgeInsets.all(isCompact ? 8 : 16),
+        constraints: BoxConstraints(
+          minWidth: isCompact ? 80 : 120,
+          maxWidth: isCompact ? 110 : 200,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -778,53 +801,63 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 24, color: color),
-            const SizedBox(height: 8),
+            Icon(icon, size: isCompact ? 18 : 24, color: color),
+            SizedBox(height: isCompact ? 4 : 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: isCompact ? 12 : 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isCompact ? 4 : 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini
               children: [
                 Icon(
                   Icons.thermostat,
                   color: status['tempNormal']! ? Colors.green : Colors.red,
-                  size: 20,
+                  size: isCompact ? 14 : 20,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  status['tempNormal']! ? 'Suhu Normal' : 'Suhu Tidak Normal',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: status['tempNormal']! ? Colors.green : Colors.red,
+                SizedBox(width: 2),
+                Expanded(
+                  // Ganti Flexible menjadi Expanded
+                  child: Text(
+                    status['tempNormal']! ? 'Suhu Normal' : 'Suhu Tidak Normal',
+                    style: TextStyle(
+                      fontSize: isCompact ? 9 : 12,
+                      color: status['tempNormal']! ? Colors.green : Colors.red,
+                    ),
+                    softWrap: true, // Pastikan wrap
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: isCompact ? 2 : 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini
               children: [
                 Icon(
                   Icons.water_drop,
                   color: status['humidityNormal']! ? Colors.green : Colors.red,
-                  size: 20,
+                  size: isCompact ? 14 : 20,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  status['humidityNormal']!
-                      ? 'Kelembaban Normal'
-                      : 'Kelembaban Tidak Normal',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color:
-                        status['humidityNormal']! ? Colors.green : Colors.red,
+                SizedBox(width: 2),
+                Expanded(
+                  // Ganti Flexible menjadi Expanded
+                  child: Text(
+                    status['humidityNormal']!
+                        ? 'Kelembaban Normal'
+                        : 'Kelembaban Tidak Normal',
+                    style: TextStyle(
+                      fontSize: isCompact ? 9 : 12,
+                      color:
+                          status['humidityNormal']! ? Colors.green : Colors.red,
+                    ),
+                    softWrap: true, // Pastikan wrap
                   ),
                 ),
               ],

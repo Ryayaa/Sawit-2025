@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:admin/screens/profil/profil.dart';
-// import '../../../screens/history/history_screen.dart';
-// import '../../../screens/dashboard/dashboard_screen.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
     return Drawer(
-      backgroundColor: const Color(0xFFF1F1F1), // abu-abu muda
+      backgroundColor: const Color(0xFFF1F1F1),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
       ),
@@ -19,65 +17,15 @@ class SideMenu extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F1F1), // sama dengan background drawer
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x1A3A7D44),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFF27329), Color(0xFF3A7D44)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0x33F27329),
-                          blurRadius: 12,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 32,
-                      backgroundColor: Colors.transparent,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Image.asset("assets/images/logo1sawit.png"),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    "I-Sawit",
-                    style: TextStyle(
-                      color: Color(0xFF3A7D44),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const _DrawerHeader(),
             const SizedBox(height: 8),
             DrawerListTile(
               title: "Dashboard",
               svgSrc: "assets/icons/menu_dashboard.svg",
               routeName: '/dashboard',
-              selected: ModalRoute.of(context)?.settings.name == '/dashboard',
+              selected: currentRoute == '/dashboard',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/dashboard') {
+                if (currentRoute != '/dashboard') {
                   Navigator.pushReplacementNamed(context, '/dashboard');
                 } else {
                   Navigator.pop(context);
@@ -88,9 +36,9 @@ class SideMenu extends StatelessWidget {
               title: "Log History",
               svgSrc: "assets/icons/menu_doc.svg",
               routeName: '/history',
-              selected: ModalRoute.of(context)?.settings.name == '/history',
+              selected: currentRoute == '/history',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/history') {
+                if (currentRoute != '/history') {
                   Navigator.pushNamed(context, '/history');
                 } else {
                   Navigator.pop(context);
@@ -101,11 +49,10 @@ class SideMenu extends StatelessWidget {
               title: "Profil",
               svgSrc: "assets/icons/menu_tran.svg",
               routeName: '/profil',
-              selected: ModalRoute.of(context)?.settings.name == '/profil',
+              selected: currentRoute == '/profil',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/profil') {
-                  Navigator.pushNamed(
-                      context, '/profil'); // <-- INI YANG BENAR!
+                if (currentRoute != '/profil') {
+                  Navigator.pushNamed(context, '/profil');
                 } else {
                   Navigator.pop(context);
                 }
@@ -115,11 +62,10 @@ class SideMenu extends StatelessWidget {
               title: "Pesan",
               svgSrc: "assets/icons/menu_tran.svg",
               routeName: '/pesan',
-              selected: ModalRoute.of(context)?.settings.name == '/pesan',
+              selected: currentRoute == '/pesan',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/pesan') {
-                  Navigator.pushNamed(
-                      context, '/pesan'); // <-- INI YANG BENAR!
+                if (currentRoute != '/pesan') {
+                  Navigator.pushNamed(context, '/pesan');
                 } else {
                   Navigator.pop(context);
                 }
@@ -129,11 +75,10 @@ class SideMenu extends StatelessWidget {
               title: "USER",
               svgSrc: "assets/icons/menu_profile.svg",
               routeName: '/user',
-              selected: ModalRoute.of(context)?.settings.name == '/user',
+              selected: currentRoute == '/user',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/user') {
-                  Navigator.pushNamed(
-                      context, '/user'); // <-- INI YANG BENAR!
+                if (currentRoute != '/user') {
+                  Navigator.pushNamed(context, '/user');
                 } else {
                   Navigator.pop(context);
                 }
@@ -143,10 +88,9 @@ class SideMenu extends StatelessWidget {
               title: "Notification",
               svgSrc: "assets/icons/menu_notification.svg",
               routeName: '/notification',
-              selected:
-                  ModalRoute.of(context)?.settings.name == '/notification',
+              selected: currentRoute == '/notification',
               press: () {
-                if (ModalRoute.of(context)?.settings.name != '/notification') {
+                if (currentRoute != '/notification') {
                   Navigator.pushNamed(context, '/notification');
                 } else {
                   Navigator.pop(context);
@@ -156,6 +100,70 @@ class SideMenu extends StatelessWidget {
             const SizedBox(height: 24),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DrawerHeader extends StatelessWidget {
+  const _DrawerHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return DrawerHeader(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF1F1F1),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1A3A7D44),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF27329), Color(0xFF3A7D44)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33F27329),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const CircleAvatar(
+              radius: 32,
+              backgroundColor: Colors.transparent,
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: Image(
+                  image: AssetImage("assets/images/logo1sawit.png"),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          const Flexible(
+            child: Text(
+              "I-Sawit",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Color(0xFF3A7D44),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -184,12 +192,10 @@ class DrawerListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: ListTile(
           onTap: press,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: Container(
             decoration: BoxDecoration(
-              color:
-                  selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
+              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
               shape: BoxShape.circle,
             ),
             padding: const EdgeInsets.all(8),

@@ -5,10 +5,11 @@ import 'package:latlong2/latlong.dart';
 class GPSMapPlaceholder extends StatelessWidget {
   const GPSMapPlaceholder({super.key});
 
+  static final LatLng _currentLocation =
+      LatLng(-6.200000, 106.816666); // Jakarta
+
   @override
   Widget build(BuildContext context) {
-    final LatLng currentLocation = LatLng(-6.200000, 106.816666); // Jakarta
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -26,18 +27,19 @@ class GPSMapPlaceholder extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: FlutterMap(
               options: MapOptions(
-                initialCenter: currentLocation,
+                initialCenter: _currentLocation,
                 initialZoom: 13.0,
               ),
               children: [
                 TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
+                  urlTemplate:
+                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
                 ),
                 MarkerLayer(
                   markers: [
                     Marker(
-                      point: currentLocation,
+                      point: _currentLocation,
                       width: 40,
                       height: 40,
                       child: const Icon(
