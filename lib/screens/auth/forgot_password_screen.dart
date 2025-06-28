@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants.dart';
+// import '../../constants.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -25,6 +25,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 500;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
@@ -44,19 +46,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
+            padding: EdgeInsets.all(isMobile ? 16 : 40),
             child: Card(
               color: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 28 : 40,
+                  horizontal: isMobile ? 18 : 40,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.lock_reset, color: Color(0xFF3A7D44), size: 48),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3A7D44).withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(18),
+                        child: const Icon(Icons.lock_reset, color: Color(0xFF3A7D44), size: 48),
+                      ),
                       const SizedBox(height: 18),
                       const Text(
                         'Reset Password',
@@ -78,11 +91,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         decoration: InputDecoration(
                           labelText: 'Username',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           prefixIcon: const Icon(Icons.person),
                           filled: true,
-                          fillColor: Color(0xFFF5F6FA),
+                          fillColor: const Color(0xFFF5F6FA),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -95,20 +108,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       SizedBox(
                         width: double.infinity,
                         height: 48,
-                        child: ElevatedButton(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.send_rounded, size: 20),
                           onPressed: _resetPassword,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF3A7D44),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            elevation: 0,
+                            elevation: 2,
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                          child: const Text(
-                            'Reset Password',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                          label: const Text('Reset Password'),
                         ),
                       ),
                     ],
