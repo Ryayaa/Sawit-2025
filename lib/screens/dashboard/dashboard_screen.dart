@@ -19,6 +19,7 @@ import '../../models/gps_coordinate.dart';
 import 'dart:async';
 import '../../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -65,6 +66,8 @@ class _DashboardViewState extends State<DashboardView> {
   double _tempMaxNormal = 35.0;
   double _humidityMinNormal = 60.0;
   double _humidityMaxNormal = 80.0;
+  double _tempThreshold = 40.0;
+  double _humidityThreshold = 30.0;
 
   late Future<void> _initialization;
   final ScrollController? _scrollController = ScrollController();
@@ -111,6 +114,7 @@ class _DashboardViewState extends State<DashboardView> {
   void initState() {
     super.initState();
     _loadRangeSettings();
+    _listenRangeSettings();
     NotificationService.initialize();
     _initialization = _initializeData();
   }
@@ -143,12 +147,36 @@ class _DashboardViewState extends State<DashboardView> {
 
   // Add method to load range settings
   Future<void> _loadRangeSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _tempMinNormal = prefs.getDouble('tempMinNormal') ?? 25.0;
-      _tempMaxNormal = prefs.getDouble('tempMaxNormal') ?? 35.0;
-      _humidityMinNormal = prefs.getDouble('humidityMinNormal') ?? 60.0;
-      _humidityMaxNormal = prefs.getDouble('humidityMaxNormal') ?? 80.0;
+    final dbRef = FirebaseDatabase.instance.ref();
+    final snapshot = await dbRef.child('notification_settings').get();
+    if (snapshot.exists) {
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      setState(() {
+        _tempMinNormal = (data['tempMinNormal'] ?? 25).toDouble();
+        _tempMaxNormal = (data['tempMaxNormal'] ?? 35).toDouble();
+        _humidityMinNormal = (data['humidityMinNormal'] ?? 60).toDouble();
+        _humidityMaxNormal = (data['humidityMaxNormal'] ?? 80).toDouble();
+        _tempThreshold = (data['tempThreshold'] ?? 40).toDouble();
+        _humidityThreshold = (data['humidityThreshold'] ?? 30).toDouble();
+      });
+    }
+  }
+
+  // Listen perubahan real-time (opsional, jika ingin auto update tanpa refresh)
+  void _listenRangeSettings() {
+    final dbRef = FirebaseDatabase.instance.ref();
+    dbRef.child('notification_settings').onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+        setState(() {
+          _tempMinNormal = (data['tempMinNormal'] ?? 25).toDouble();
+          _tempMaxNormal = (data['tempMaxNormal'] ?? 35).toDouble();
+          _humidityMinNormal = (data['humidityMinNormal'] ?? 60).toDouble();
+          _humidityMaxNormal = (data['humidityMaxNormal'] ?? 80).toDouble();
+          _tempThreshold = (data['tempThreshold'] ?? 40).toDouble();
+          _humidityThreshold = (data['humidityThreshold'] ?? 30).toDouble();
+        });
+      }
     });
   }
 
@@ -206,8 +234,10 @@ class _DashboardViewState extends State<DashboardView> {
                   Expanded(
                     flex: 5,
                     child: SingleChildScrollView(
-                      controller: _scrollController, // Gunakan controller jika ingin, atau hapus jika tidak perlu
-                      physics: const ClampingScrollPhysics(), // Tambahkan ini agar scroll lebih smooth di mobile
+                      controller:
+                          _scrollController, // Gunakan controller jika ingin, atau hapus jika tidak perlu
+                      physics:
+                          const ClampingScrollPhysics(), // Tambahkan ini agar scroll lebih smooth di mobile
                       padding: const EdgeInsets.all(defaultPadding),
                       child: Column(
                         children: [
@@ -387,7 +417,9 @@ class _DashboardViewState extends State<DashboardView> {
                                     Navigator.pushNamed(
                                       context,
                                       '/history',
-                                      arguments: {'module': 'Module 1'}, // Gunakan format yang sama dengan filter
+                                      arguments: {
+                                        'module': 'Module 1'
+                                      }, // Gunakan format yang sama dengan filter
                                     );
                                   },
                                 ),
@@ -673,33 +705,17 @@ class _DashboardViewState extends State<DashboardView> {
   void _checkTemperature(String moduleId, List<SensorReading> readings) {
     try {
       if (readings.isNotEmpty) {
-        _setupRangeSettingsListener(); // Add this line to update ranges
         setState(() {
           _moduleReadings[moduleId] = readings;
         });
 
         final latest = readings.last;
 
-        SharedPreferences.getInstance().then((prefs) {
-          final tempThreshold =
-              double.tryParse(prefs.getString('tempThreshold') ?? '40') ?? 40.0;
-          final humidityThreshold =
-              double.tryParse(prefs.getString('humidityThreshold') ?? '30') ??
-                  30.0;
-
-          setState(() {
-            if (latest.temperature >= tempThreshold) {
-              _moduleAlerts['${moduleId}_temp'] = true;
-            } else {
-              _moduleAlerts['${moduleId}_temp'] = false;
-            }
-
-            if (latest.humidity >= humidityThreshold) {
-              _moduleAlerts['${moduleId}_humidity'] = true;
-            } else {
-              _moduleAlerts['${moduleId}_humidity'] = false;
-            }
-          });
+        setState(() {
+          _moduleAlerts['${moduleId}_temp'] =
+              latest.temperature >= _tempThreshold;
+          _moduleAlerts['${moduleId}_humidity'] =
+              latest.humidity >= _humidityThreshold;
         });
       }
     } catch (e) {

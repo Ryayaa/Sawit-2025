@@ -11,7 +11,7 @@ class HeaderUser extends StatelessWidget {
   final String title;
   const HeaderUser({
     Key? key,
-    this.title = "Dashboard", // Default title
+    this.title = "Dashboard",
   }) : super(key: key);
 
   @override
@@ -20,7 +20,7 @@ class HeaderUser extends StatelessWidget {
       children: [
         if (!Responsive.isDesktop(context))
           IconButton(
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
             onPressed: context.read<MenuAppController>().controlMenu,
           ),
         if (!Responsive.isMobile(context))
@@ -29,18 +29,18 @@ class HeaderUser extends StatelessWidget {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black, // pastikan di sini hitam
+              color: Colors.black,
             ),
           ),
-        const Spacer(), // Replace Expanded(child: SearchField()) with Spacer
-        ProfileCard()
+        const Spacer(),
+        const ProfileCardUser(), // Gunakan const
       ],
     );
   }
 }
 
-class ProfileCard extends StatelessWidget {
-  const ProfileCard({Key? key}) : super(key: key);
+class ProfileCardUser extends StatelessWidget {
+  const ProfileCardUser({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +50,10 @@ class ProfileCard extends StatelessWidget {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => ProfileUserPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const ProfileUserPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
                   child: child,
@@ -85,31 +87,19 @@ class ProfileCard extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           value: 'profile',
-          child: Row(
-            children: [
-              const Icon(Icons.person_outline),
-              const SizedBox(width: 8),
-              const Text('Profile'),
-            ],
-          ),
+          child: _ProfileMenuItemUser(),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           value: 'logout',
-          child: Row(
-            children: [
-              const Icon(Icons.logout),
-              const SizedBox(width: 8),
-              const Text('Logout'),
-            ],
-          ),
+          child: _LogoutMenuItemUser(),
         ),
       ],
       child: Container(
-        margin: EdgeInsets.only(left: defaultPadding),
-        decoration: BoxDecoration(
+        margin: const EdgeInsets.only(left: defaultPadding),
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -119,23 +109,53 @@ class ProfileCard extends StatelessWidget {
             ),
           ],
         ),
-        child: CircleAvatar(
+        child: const CircleAvatar(
           radius: 24,
           backgroundColor: Colors.white,
           child: CircleAvatar(
             radius: 21,
             backgroundImage: AssetImage("assets/images/profile_pic.png"),
-            backgroundColor: Colors.grey[200],
+            backgroundColor: Color(0xFFF5F5F5),
           ),
         ),
       ),
     );
   }
 }
+
+// Pisahkan menu item agar bisa const
+class _ProfileMenuItemUser extends StatelessWidget {
+  const _ProfileMenuItemUser();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        Icon(Icons.person_outline),
+        SizedBox(width: 8),
+        Text('Profile'),
+      ],
+    );
+  }
+}
+
+class _LogoutMenuItemUser extends StatelessWidget {
+  const _LogoutMenuItemUser();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        Icon(Icons.logout),
+        SizedBox(width: 8),
+        Text('Logout'),
+      ],
+    );
+  }
+}
+
 class SearchField extends StatelessWidget {
-  const SearchField({
-    Key? key,
-  }) : super(key: key);
+  const SearchField({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

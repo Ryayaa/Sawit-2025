@@ -1,114 +1,199 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:admin/screens/profil/profil_user.dart';
-
-import '../../../screens/dashboard/dashboard_user.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/menu_app_controller.dart';
+import '../../../screens/dashboard/dashboard_user.dart';
+import '../../../screens/profil/profil_user.dart';
+
+// Konstanta warna dashboard
+const kPrimaryColor = Color(0xFF3A7D44);
+const kAccentColor = Color(0xFF91C788);
+const kCardBackground = Color(0xFFF9F9F9);
+const kShadowColor = Color(0xFFE0E0E0);
 
 class SideMenuUser extends StatelessWidget {
-  const SideMenuUser({
-    Key? key,
-  }) : super(key: key);
+  const SideMenuUser({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
     return Drawer(
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(28, 28, 46, 255),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 100, // Ukuran lebar logo agar tidak terlalu besar
-                  height: 100, // Tinggi juga dibatasi agar seimbang
-                  child: Image.asset("assets/images/logo1sawit.png"),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    "I-Sawit",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20, // Ukuran font yang proporsional
-                      fontWeight: FontWeight.bold,
+      backgroundColor: kCardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
+      ),
+      child: Container(
+        color: kCardBackground,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const _DrawerHeaderUser(),
+            const SizedBox(height: 8),
+            DrawerListTileUser(
+              title: "Dashboard",
+              svgSrc: "assets/icons/menu_dashboard.svg",
+              routeName: '/dashboard_user',
+              selected: currentRoute == '/dashboard_user',
+              press: () {
+                if (currentRoute != '/dashboard_user') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MultiProvider(
+                        providers: [
+                          ChangeNotifierProvider(
+                            create: (context) => MenuAppController(),
+                          ),
+                        ],
+                        child: const DashboardUser(),
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  );
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            DrawerListTileUser(
+              title: "Profil",
+              svgSrc: "assets/icons/menu_profile.svg",
+              routeName: '/profil_user',
+              selected: currentRoute == '/profil_user',
+              press: () {
+                if (currentRoute != '/profil_user') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ProfileUserPage()),
+                  );
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            // Tambahkan menu lain jika perlu
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerHeaderUser extends StatelessWidget {
+  const _DrawerHeaderUser();
+
+  @override
+  Widget build(BuildContext context) {
+    return DrawerHeader(
+      decoration: const BoxDecoration(
+        color: kCardBackground,
+        boxShadow: [
+          BoxShadow(
+            color: kShadowColor,
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [kPrimaryColor, kAccentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: kShadowColor,
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
                 ),
               ],
             ),
-          ),
-          DrawerListTile(
-            title: "Dashboard",
-            svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                        create: (context) => MenuAppController(),
-                      ),
-                    ],
-                    child: DashboardUser(), // Removed const here
-                  ),
+            child: const CircleAvatar(
+              radius: 32,
+              backgroundColor: Colors.transparent,
+              child: Padding(
+                padding: EdgeInsets.all(6),
+                child: Image(
+                  image: AssetImage("assets/images/logo1sawit.png"),
                 ),
-              );
-            },
+              ),
+            ),
           ),
-         
-          DrawerListTile(
-            title: "Profil",
-            svgSrc: "assets/icons/menu_profile.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileUserPage()),
-              );
-            },
+          const SizedBox(width: 16),
+          const Flexible(
+            child: Text(
+              "I-Sawit",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: kPrimaryColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
           ),
-          // DrawerListTile(
-          //   title: "Notification",
-          //   svgSrc: "assets/icons/menu_notification.svg",
-          //   press: () {},
-          // ),
         ],
       ),
     );
   }
 }
 
-class DrawerListTile extends StatelessWidget {
-  const DrawerListTile({
+class DrawerListTileUser extends StatelessWidget {
+  const DrawerListTileUser({
     Key? key,
-    // For selecting those three line once press "Command+D"
     required this.title,
     required this.svgSrc,
     required this.press,
+    required this.routeName,
+    this.selected = false,
   }) : super(key: key);
 
-  final String title, svgSrc;
+  final String title, svgSrc, routeName;
   final VoidCallback press;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: press,
-      horizontalTitleGap: 0.0,
-      leading: SvgPicture.asset(
-        svgSrc,
-        colorFilter: ColorFilter.mode(Colors.white54, BlendMode.srcIn),
-        height: 16,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.white54),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: selected ? kAccentColor.withOpacity(0.18) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: ListTile(
+          onTap: press,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          leading: Container(
+            decoration: BoxDecoration(
+              color: selected ? kPrimaryColor : kCardBackground,
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: SvgPicture.asset(
+              svgSrc,
+              colorFilter: ColorFilter.mode(
+                selected ? Colors.white : kPrimaryColor,
+                BlendMode.srcIn,
+              ),
+              height: 20,
+            ),
+          ),
+          title: Text(
+            title,
+            style: TextStyle(
+              color: selected ? kPrimaryColor : Colors.black87,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 15,
+            ),
+          ),
+          horizontalTitleGap: 12,
+        ),
       ),
     );
   }

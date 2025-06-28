@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:admin/screens/main/components/side_menu.dart';
+import 'package:admin/controllers/menu_app_controller.dart';
+import 'package:admin/responsive.dart';
+import 'package:provider/provider.dart';
+import '../dashboard/components/header.dart';
 
 const kPrimaryColor = Color(0xFF3A7D44);
 const kAccentColor = Color(0xFF91C788);
@@ -26,79 +30,85 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && args['module'] != null) {
-      // Set filter module sesuai args['module']
       selectedModule = args['module'];
-      // Panggil fungsi filter atau setState sesuai kebutuhan
       _filterByModule(selectedModule);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = !Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      drawer: const SideMenu(),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 4,
-        centerTitle: true,
-        title: const Text(
-          "Log History",
-          style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 32, vertical: 16),
-        child: Column(
+      key: context.read<MenuAppController>().scaffoldKey,
+      drawer: isMobile ? const SideMenu() : null,
+      backgroundColor: kCardBackground,
+      body: SafeArea(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+            if (!isMobile)
+              const Expanded(flex: 1, child: SideMenu()),
+            Expanded(
+              flex: 5,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 32, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFilters(context),
+                    // Header sudah otomatis ada tombol menu jika mobile
+                    const Header(title: "Log History"),
                     const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.calendar_today),
-                      label: const Text("Lihat Date/Time"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () {
-                        _showDateTimeDialog(context, _getAllDateTimes());
-                      },
-                    ),
-                    if (selectedDateTime != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
+                    Card(
+                      color: Colors.white,
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Filter: ${DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)}",
-                              style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(Icons.clear, color: Colors.red),
+                            _buildFilters(context),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.calendar_today),
+                              label: const Text("Lihat Date/Time"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kPrimaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
                               onPressed: () {
-                                setState(() {
-                                  selectedDateTime = null;
-                                });
+                                _showDateTimeDialog(context, _getAllDateTimes());
                               },
                             ),
+                            if (selectedDateTime != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "Filter: ${DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)}",
+                                      style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.clear, color: Colors.red),
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedDateTime = null;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                            _buildResponsiveTable(context),
                           ],
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    _buildResponsiveTable(context),
+                    ),
                   ],
                 ),
               ),

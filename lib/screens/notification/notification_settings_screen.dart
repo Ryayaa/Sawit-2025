@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:admin/controllers/menu_app_controller.dart';
 import 'package:admin/responsive.dart';
 import '../main/components/side_menu.dart';
@@ -8,6 +7,7 @@ import '../dashboard/components/header.dart';
 import '../../../constants.dart';
 import 'package:intl/intl.dart';
 import 'package:admin/screens/history/history_screen.dart' show kPrimaryColor;
+import 'package:firebase_database/firebase_database.dart';
 
 const kAccentColor = Color(0xFF91C788);
 const kCardBackground = Color(0xFFF9F9F9);
@@ -43,50 +43,37 @@ class _NotificationSettingsScreenState
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      // Load ranges sebagai double dan convert ke string untuk TextField
-      _tempMinController.text =
-          (prefs.getDouble('tempMinNormal') ?? 25.0).toString();
-      _tempMaxController.text =
-          (prefs.getDouble('tempMaxNormal') ?? 35.0).toString();
-      _humidityMinController.text =
-          (prefs.getDouble('humidityMinNormal') ?? 60.0).toString();
-      _humidityMaxController.text =
-          (prefs.getDouble('humidityMaxNormal') ?? 80.0).toString();
-
-      // Load alert thresholds
-      _temperatureController.text =
-          (prefs.getDouble('tempThreshold') ?? 40.0).toString();
-      _humidityController.text =
-          (prefs.getDouble('humidityThreshold') ?? 30.0).toString();
-
-      _temperatureEnabled = prefs.getBool('tempEnabled') ?? true;
-      _humidityEnabled = prefs.getBool('humidityEnabled') ?? true;
-    });
+    final dbRef = FirebaseDatabase.instance.ref();
+    final snapshot = await dbRef.child('notification_settings').get();
+    if (snapshot.exists) {
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      setState(() {
+        _temperatureEnabled = data['tempEnabled'] ?? true;
+        _humidityEnabled = data['humidityEnabled'] ?? true;
+        _temperatureController.text = (data['tempThreshold'] ?? 40).toString();
+        _humidityController.text = (data['humidityThreshold'] ?? 30).toString();
+        _tempMinController.text = (data['tempMinNormal'] ?? 25).toString();
+        _tempMaxController.text = (data['tempMaxNormal'] ?? 35).toString();
+        _humidityMinController.text =
+            (data['humidityMinNormal'] ?? 60).toString();
+        _humidityMaxController.text =
+            (data['humidityMaxNormal'] ?? 80).toString();
+      });
+    }
   }
 
   Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Save as double untuk memudahkan pembacaan di dashboard
-    await prefs.setDouble(
-        'tempMinNormal', double.parse(_tempMinController.text));
-    await prefs.setDouble(
-        'tempMaxNormal', double.parse(_tempMaxController.text));
-    await prefs.setDouble(
-        'humidityMinNormal', double.parse(_humidityMinController.text));
-    await prefs.setDouble(
-        'humidityMaxNormal', double.parse(_humidityMaxController.text));
-
-    // Alert thresholds
-    await prefs.setDouble(
-        'tempThreshold', double.parse(_temperatureController.text));
-    await prefs.setDouble(
-        'humidityThreshold', double.parse(_humidityController.text));
-
-    await prefs.setBool('tempEnabled', _temperatureEnabled);
-    await prefs.setBool('humidityEnabled', _humidityEnabled);
+    final dbRef = FirebaseDatabase.instance.ref();
+    await dbRef.child('notification_settings').set({
+      'tempEnabled': _temperatureEnabled,
+      'humidityEnabled': _humidityEnabled,
+      'tempThreshold': double.parse(_temperatureController.text),
+      'humidityThreshold': double.parse(_humidityController.text),
+      'tempMinNormal': double.parse(_tempMinController.text),
+      'tempMaxNormal': double.parse(_tempMaxController.text),
+      'humidityMinNormal': double.parse(_humidityMinController.text),
+      'humidityMaxNormal': double.parse(_humidityMaxController.text),
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
