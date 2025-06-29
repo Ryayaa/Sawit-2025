@@ -44,124 +44,95 @@ class _ProfileUserState extends State<ProfileUserPage> {
   }
 
   void _showResetPasswordDialog(BuildContext context) {
-    String? verificationId;
-    final otpController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final phoneNumber = userData?['nomor_telepon'];
+  final newPasswordController = TextEditingController();
+  bool _obscurePassword = true;
 
-    if (phoneNumber == null || phoneNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Nomor telepon tidak tersedia")),
-      );
-      return;
-    }
-
-    FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) {},
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verifikasi gagal: ${e.message}')),
-        );
-      },
-      codeSent: (String verId, int? resendToken) {
-        verificationId = verId;
-
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text("Verifikasi OTP"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text("Masukkan kode OTP yang dikirim ke nomor Anda."),
-                const SizedBox(height: 8),
-                OTPTextField(
-                  length: 6,
-                  width: MediaQuery.of(context).size.width,
-                  fieldWidth: 40,
-                  style: const TextStyle(fontSize: 18),
-                  textFieldAlignment: MainAxisAlignment.spaceAround,
-                  fieldStyle: FieldStyle.box,
-                  onCompleted: (code) {
-                    otpController.text = code;
-                  },
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text("Reset Password"),
+          content: TextField(
+            controller: newPasswordController,
+            obscureText: _obscurePassword,
+            decoration: InputDecoration(
+              labelText: 'Password Baru',
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: newPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Password Baru'),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                child: const Text("Batal"),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
               ),
-              ElevatedButton(
-                child: const Text("Verifikasi & Ubah"),
-                onPressed: () async {
-                  if (otpController.text.length != 6) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Kode OTP harus 6 digit")),
-                    );
-                    return;
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Batal"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              child: const Text("Ubah"),
+              onPressed: () async {
+                final newPassword = newPasswordController.text.trim();
+                final user = FirebaseAuth.instance.currentUser;
+
+                if (newPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Password tidak boleh kosong")),
+                  );
+                  return;
+                }
+
+                try {
+                  await user?.updatePassword(newPassword);
+                  final uid = user?.uid;
+
+                  if (uid != null) {
+                    await FirebaseDatabase.instance.ref()
+                        .child('User')
+                        .child(uid)
+                        .update({'password': newPassword});
                   }
 
-                  try {
-                    final credential = PhoneAuthProvider.credential(
-                      verificationId: verificationId!,
-                      smsCode: otpController.text,
-                    );
+                  Navigator.of(context).pop();
 
-                    final user = FirebaseAuth.instance.currentUser;
-                    await user?.reauthenticateWithCredential(credential);
-                    await user
-                        ?.updatePassword(newPasswordController.text.trim());
-
-                    final uid = user!.uid;
-                    await _dbRef.child(uid).update({
-                      'password': newPasswordController.text.trim(),
-                      'passwordTerakhirDiubah':
-                          DateTime.now().toIso8601String(),
-                    });
-
-                    Navigator.of(context).pop();
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
+                  showDialog(
+                    context: context,
+                    useRootNavigator: true,
+                    builder: (BuildContext dialogContext) {
+                      return AlertDialog(
                         title: const Text("Berhasil"),
                         content: const Text("Password berhasil diubah."),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
                             child: const Text("OK"),
                           )
                         ],
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              "Gagal verifikasi atau update password: $e")),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-      codeAutoRetrievalTimeout: (String verId) {
-        verificationId = verId;
-      },
-    );
-  }
+                      );
+                    },
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Gagal update password: $e")),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
