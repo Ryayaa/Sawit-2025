@@ -14,6 +14,9 @@ import 'screens/notification/notification_settings_screen.dart';
 import 'screens/user/user_screen.dart';
 import 'config/firebase_options.dart';
 import 'screens/dashboard/pesan_screen.dart';
+import 'screens/history/user_history_screen.dart';
+import 'screens/dashboard/dashboard_user.dart'; // Import the DashboardUserScreen widget
+import 'screens/profil/profil_user.dart'; // Import the ProfileUserPage widget
 
 Future<void> main() async {
   try {
@@ -66,7 +69,18 @@ class MyApp extends StatelessWidget {
         title: 'Sawit Management System',
         theme: _buildTheme(context),
         initialRoute: '/',
-        routes: _buildRoutes(),
+        routes: {
+          '/': (context) => const LoginScreen(),
+          '/dashboard': (context) => const DashboardScreen(), // Add const
+          '/profil': (context) => const ProfilePage(),
+          '/pesan': (context) => const PesanScreen(), // Redirect to dashboard
+          '/history': (context) => const HistoryScreen(),
+          '/notification': (context) => const NotificationSettingsScreen(),
+          '/user': (context) => const UserScreen(),
+          '/user_history': (context) => UserHistoryScreen(),
+          '/dashboard_user': (context) => DashboardUser(), // ganti dengan nama widget dashboard user Anda
+          '/profil_user': (context) => ProfileUserPage(), // ganti dengan nama widget profil user Anda
+        },
         builder: (context, child) {
           // Add error boundary
           ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -151,19 +165,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Map<String, Widget Function(BuildContext)> _buildRoutes() {
-    // Cache routes
-    return {
-      '/': (context) => const LoginScreen(),
-      '/dashboard': (context) => const DashboardScreen(), // Add const
-      '/profil': (context) => const ProfilePage(),
-      '/pesan': (context) => const PesanScreen(), // Redirect to dashboard
-      '/history': (context) => const HistoryScreen(),
-      '/notification': (context) => const NotificationSettingsScreen(),
-      '/user': (context) => const UserScreen(),
-    };
   }
 }
 

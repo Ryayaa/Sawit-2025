@@ -17,6 +17,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
+import '../history/user_history_screen.dart';
 
 const kPrimaryColor = Color(0xFF3A7D44);
 const kAccentColor = Color(0xFF91C788);
@@ -85,9 +86,9 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     try {
       ['module1', 'module2', 'module3'].forEach((moduleId) {
         final subscription = _firebaseService.getModuleData(moduleId).listen(
-          (data) => _checkTemperature(moduleId, data),
-          onError: (error) => print('Error listening to $moduleId: $error'),
-        );
+              (data) => _checkTemperature(moduleId, data),
+              onError: (error) => print('Error listening to $moduleId: $error'),
+            );
         _subscriptions.add(subscription);
       });
     } catch (e) {
@@ -185,20 +186,23 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-  color: kAccentColor.withOpacity(0.2),
-  border: Border.all(color: kAccentColor),
-),
+          color: Colors.orange[100], // Sama seperti dashboard_screen.dart
+          border: Border.all(color: Colors.orange, width: 1),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Row(
           children: [
-            Icon(Icons.warning, color: kPrimaryColor),
-Text(
-  message,
-  style: TextStyle(color: kPrimaryColor),
-),
-                  // color: Colors.orange[900],
-                // ),
-              // ),
-            // ),
+            Icon(Icons.warning, color: Colors.orange[800]),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.orange[900],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -224,7 +228,7 @@ Text(
       key: context.read<MenuAppController>().scaffoldKey,
       drawer: const SideMenuUser(),
       body: Container(
-  color: kCardBackground,
+        color: kCardBackground,
         child: SafeArea(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +256,7 @@ Text(
                           child: HeaderUser(),
                         ),
                       ),
-                      const SizedBox(height: defaultPadding),
+                      const SizedBox(),
                       StreamBuilder<String>(
                         stream: AuthService().getUserDisplayName(),
                         builder: (context, snapshot) {
@@ -331,13 +335,13 @@ Text(
                       const SizedBox(height: defaultPadding),
                       const _TargetKelembapan(),
                       const SizedBox(height: defaultPadding),
-                       _ModuleChartCard(
+                      _ModuleChartCard(
                         moduleName: "Module 1",
                         dataStream: _firebaseService.getModuleData('module1'),
                         onTap: () {
                           Navigator.pushNamed(
                             context,
-                            '/history',
+                            '/user_history',
                             arguments: {'module': 'Module 1'},
                           );
                         },
@@ -349,7 +353,7 @@ Text(
                         onTap: () {
                           Navigator.pushNamed(
                             context,
-                            '/history',
+                            '/user_history',
                             arguments: {'module': 'Module 2'},
                           );
                         },
@@ -361,7 +365,7 @@ Text(
                         onTap: () {
                           Navigator.pushNamed(
                             context,
-                            '/history',
+                            '/user_history',
                             arguments: {'module': 'Module 3'},
                           );
                         },
@@ -381,11 +385,9 @@ Text(
                                     onPressed: _refreshData,
                                     icon: const Icon(Icons.refresh, size: 18),
                                     label: const Text("Refresh Data"),
-                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: kPrimaryColor,
-                                    foregroundColor: Colors.white,
-
-
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: kPrimaryColor,
+                                      foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 16, vertical: 8),
                                       shape: RoundedRectangleBorder(
@@ -514,24 +516,24 @@ Text(
         padding: const EdgeInsets.all(16),
         constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
         decoration: BoxDecoration(
-  color: kCardBackground,
-  borderRadius: BorderRadius.circular(16),
-  border: Border.all(color: kPrimaryColor, width: 2),
-),
+          color: kCardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kPrimaryColor, width: 2),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 40, color: kPrimaryColor),
             const SizedBox(height: 8),
             Text(
-  value,
-  style: TextStyle(
-    color: kPrimaryColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  // color: Colors.black),
-              // textAlign: TextAlign.center,
-            ),
+              value,
+              style: TextStyle(
+                color: kPrimaryColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                // color: Colors.black),
+                // textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -561,26 +563,23 @@ Text(
           maxWidth: isCompact ? 110 : 200,
         ),
         decoration: BoxDecoration(
-  color: kCardBackground,
-  borderRadius: BorderRadius.circular(16),
-  border: Border.all(color: kAccentColor, width: 2),
-),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color, width: 2), // border sesuai parameter
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: isCompact ? 18 : 24, color: kPrimaryColor),
+            Icon(icon, size: isCompact ? 18 : 24, color: color), // icon sesuai parameter
             SizedBox(height: isCompact ? 4 : 8),
             Text(
-  moduleName,
-  style: TextStyle(
-    color: kPrimaryColor,
+              moduleName,
+              style: TextStyle(
+                color: Colors.black87,
                 fontSize: isCompact ? 12 : 16,
                 fontWeight: FontWeight.bold,
-                // color: Colors.black87,
               ),
             ),
-        // ),
-      // ),
             SizedBox(height: isCompact ? 4 : 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -699,8 +698,8 @@ class _TargetKelembapan extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
-  backgroundColor: kShadowColor,
-  valueColor: AlwaysStoppedAnimation<Color>(kAccentColor),
+            backgroundColor: kShadowColor,
+            valueColor: AlwaysStoppedAnimation<Color>(kAccentColor),
 // ),
             value: 0.71,
             minHeight: 10,
@@ -708,7 +707,7 @@ class _TargetKelembapan extends StatelessWidget {
             // valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
           ),
           const SizedBox(height: 4),
-         Text(
+          Text(
             "Target Kelembapan",
             style: TextStyle(color: kPrimaryColor),
           ),

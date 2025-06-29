@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
-import '../../../controllers/menu_app_controller.dart';
-import '../../../screens/dashboard/dashboard_user.dart';
-import '../../../screens/profil/profil_user.dart';
-
-// Konstanta warna dashboard
-const kPrimaryColor = Color(0xFF3A7D44);
-const kAccentColor = Color(0xFF91C788);
-const kCardBackground = Color(0xFFF9F9F9);
-const kShadowColor = Color(0xFFE0E0E0);
+// import '../../../screens/dashboard/dashboard_user.dart';
+// import '../../../screens/profil/profil_user.dart';
+// import '../../../screens/history/user_history_screen.dart';
 
 class SideMenuUser extends StatelessWidget {
   const SideMenuUser({Key? key}) : super(key: key);
@@ -18,12 +11,12 @@ class SideMenuUser extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentRoute = ModalRoute.of(context)?.settings.name;
     return Drawer(
-      backgroundColor: kCardBackground,
+      backgroundColor: const Color(0xFFF1F1F1),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
       ),
       child: Container(
-        color: kCardBackground,
+        color: const Color(0xFFF5F6FA),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -36,19 +29,7 @@ class SideMenuUser extends StatelessWidget {
               selected: currentRoute == '/dashboard_user',
               press: () {
                 if (currentRoute != '/dashboard_user') {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MultiProvider(
-                        providers: [
-                          ChangeNotifierProvider(
-                            create: (context) => MenuAppController(),
-                          ),
-                        ],
-                        child: const DashboardUser(),
-                      ),
-                    ),
-                  );
+                  Navigator.pushReplacementNamed(context, '/dashboard_user');
                 } else {
                   Navigator.pop(context);
                 }
@@ -61,17 +42,25 @@ class SideMenuUser extends StatelessWidget {
               selected: currentRoute == '/profil_user',
               press: () {
                 if (currentRoute != '/profil_user') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ProfileUserPage()),
-                  );
+                  Navigator.pushNamed(context, '/profil_user');
                 } else {
                   Navigator.pop(context);
                 }
               },
             ),
-            // Tambahkan menu lain jika perlu
+            DrawerListTileUser(
+              title: "History",
+              svgSrc: "assets/icons/menu_doc.svg",
+              routeName: '/user_history',
+              selected: currentRoute == '/user_history',
+              press: () {
+                if (currentRoute != '/user_history') {
+                  Navigator.pushReplacementNamed(context, '/user_history');
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -87,10 +76,10 @@ class _DrawerHeaderUser extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerHeader(
       decoration: const BoxDecoration(
-        color: kCardBackground,
+        color: Color(0xFFF1F1F1),
         boxShadow: [
           BoxShadow(
-            color: kShadowColor,
+            color: Color(0x1A3A7D44),
             blurRadius: 12,
             offset: Offset(0, 4),
           ),
@@ -99,16 +88,16 @@ class _DrawerHeaderUser extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [kPrimaryColor, kAccentColor],
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF27329), Color(0xFF3A7D44)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: kShadowColor,
+                  color: Color(0x33F27329),
                   blurRadius: 12,
                   offset: Offset(0, 4),
                 ),
@@ -131,7 +120,7 @@ class _DrawerHeaderUser extends StatelessWidget {
               "I-Sawit",
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: kPrimaryColor,
+                color: Color(0xFF3A7D44),
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
@@ -163,22 +152,21 @@ class DrawerListTileUser extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: selected ? kAccentColor.withOpacity(0.18) : Colors.transparent,
+        color: selected ? const Color(0x1A3A7D44) : Colors.transparent,
         borderRadius: BorderRadius.circular(14),
         child: ListTile(
           onTap: press,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: Container(
             decoration: BoxDecoration(
-              color: selected ? kPrimaryColor : kCardBackground,
+              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
               shape: BoxShape.circle,
             ),
             padding: const EdgeInsets.all(8),
             child: SvgPicture.asset(
               svgSrc,
               colorFilter: ColorFilter.mode(
-                selected ? Colors.white : kPrimaryColor,
+                selected ? Colors.white : const Color(0xFF3A7D44),
                 BlendMode.srcIn,
               ),
               height: 20,
@@ -187,7 +175,7 @@ class DrawerListTileUser extends StatelessWidget {
           title: Text(
             title,
             style: TextStyle(
-              color: selected ? kPrimaryColor : Colors.black87,
+              color: selected ? const Color(0xFF3A7D44) : Colors.black87,
               fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               fontSize: 15,
             ),

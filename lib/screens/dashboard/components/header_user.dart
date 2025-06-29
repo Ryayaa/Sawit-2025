@@ -9,21 +9,25 @@ import '../../../constants.dart';
 
 class HeaderUser extends StatelessWidget {
   final String title;
-  const HeaderUser({
-    Key? key,
-    this.title = "Dashboard",
-  }) : super(key: key);
+  final VoidCallback? onMenuPressed;
+  const HeaderUser({Key? key, this.title = "Dashboard", this.onMenuPressed})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         if (!Responsive.isDesktop(context))
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: context.read<MenuAppController>().controlMenu,
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: onMenuPressed ??
+                  () {
+                    Scaffold.of(context).openDrawer();
+                  },
+            ),
           ),
-        if (!Responsive.isMobile(context))
+        if (Responsive.isDesktop(context))
           Text(
             title,
             style: const TextStyle(
@@ -33,7 +37,7 @@ class HeaderUser extends StatelessWidget {
             ),
           ),
         const Spacer(),
-        const ProfileCardUser(), // Gunakan const
+        const ProfileCardUser(),
       ],
     );
   }
@@ -123,7 +127,6 @@ class ProfileCardUser extends StatelessWidget {
   }
 }
 
-// Pisahkan menu item agar bisa const
 class _ProfileMenuItemUser extends StatelessWidget {
   const _ProfileMenuItemUser();
 
