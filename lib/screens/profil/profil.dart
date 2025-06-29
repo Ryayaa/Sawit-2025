@@ -149,53 +149,80 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showResetPasswordDialog(BuildContext context) {
-    final newPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Reset Password"),
-        content: TextField(
-          controller: newPasswordController,
-          obscureText: true,
-          decoration: const InputDecoration(labelText: 'Password Baru'),
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Reset Password"),
+      content: TextField(
+        controller: newPasswordController,
+        obscureText: true,
+        decoration: const InputDecoration(labelText: 'Password Baru'),
+      ),
+      actions: [
+        TextButton(
+          child: const Text("Batal"),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          TextButton(
-            child: const Text("Batal"),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          ElevatedButton(
-            child: const Text("Ubah"),
-            onPressed: () async {
-              try {
-                final user = FirebaseAuth.instance.currentUser;
-                await user?.updatePassword(newPasswordController.text.trim());
-                Navigator.of(context).pop();
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
+        ElevatedButton(
+          child: const Text("Ubah"),
+          onPressed: () async {
+            final newPassword = newPasswordController.text.trim();
+            final user = FirebaseAuth.instance.currentUser;
+
+            if (newPassword.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Password tidak boleh kosong")),
+              );
+              return;
+            }
+
+            try {
+              // Step 1: Ubah password di Firebase Auth
+              await user?.updatePassword(newPassword);
+
+              // Step 2: Simpan password baru ke Realtime Database
+              final uid = user?.uid;
+              if (uid != null) {
+                await FirebaseDatabase.instance
+                    .ref()
+                    .child("User")
+                    .child(uid)
+                    .update({'password': newPassword});
+              }
+
+              Navigator.of(context).pop();
+
+              // Step 3: Tampilkan dialog sukses
+              showDialog(
+                context: context,
+                useRootNavigator: true,
+                builder: (BuildContext dialogContext) {
+                  return AlertDialog(
                     title: const Text("Berhasil"),
                     content: const Text("Password berhasil diubah."),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
                         child: const Text("OK"),
                       )
                     ],
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Gagal update password: $e")),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
+                  );
+                },
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Gagal update password: $e")),
+              );
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 
   @override
   void dispose() {
