@@ -14,71 +14,102 @@ class SideMenuUser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(28, 28, 46, 255),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 100, // Ukuran lebar logo agar tidak terlalu besar
-                  height: 100, // Tinggi juga dibatasi agar seimbang
-                  child: Image.asset("assets/images/logo1sawit.png"),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    "I-Sawit",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20, // Ukuran font yang proporsional
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+      backgroundColor: const Color(0xFFF1F1F1),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
+      ),
+      child: Container(
+        color: const Color(0xFFF5F6FA),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F1F1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x1A3A7D44),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
                   ),
-                ),
-              ],
-            ),
-          ),
-          DrawerListTile(
-            title: "Dashboard",
-            svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                        create: (context) => MenuAppController(),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFF27329), Color(0xFF3A7D44)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
-                    child: DashboardUser(), // Removed const here
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x33F27329),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 32,
+                      backgroundColor: Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Image.asset("assets/images/logo1sawit.png"),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-         
-          DrawerListTile(
-            title: "Profil",
-            svgSrc: "assets/icons/menu_profile.svg",
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileUserPage()),
-              );
-            },
-          ),
-          DrawerListTile(
-            title: "Notification",
-            svgSrc: "assets/icons/menu_notification.svg",
-            press: () {},
-          ),
-        ],
+                  const SizedBox(width: 16),
+                  Text(
+                    "I-Sawit User",
+                    style: TextStyle(
+                      color: Color(0xFF3A7D44),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DrawerListTile(
+              title: "Dashboard",
+              svgSrc: "assets/icons/menu_dashboard.svg",
+              press: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MultiProvider(
+                      providers: [
+                        ChangeNotifierProvider(
+                          create: (context) => MenuAppController(),
+                        ),
+                      ],
+                      child: DashboardUser(), // Removed const here
+                    ),
+                  ),
+                );
+              },
+            ),
+            DrawerListTile(
+              title: "Profil",
+              svgSrc: "assets/icons/menu_profile.svg",
+              press: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileUserPage()),
+                );
+              },
+            ),
+            DrawerListTile(
+              title: "Notification",
+              svgSrc: "assets/icons/menu_notification.svg",
+              press: () {},
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -103,12 +134,12 @@ class DrawerListTile extends StatelessWidget {
       horizontalTitleGap: 0.0,
       leading: SvgPicture.asset(
         svgSrc,
-        colorFilter: ColorFilter.mode(Colors.white54, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(const Color.fromARGB(137, 0, 0, 0), BlendMode.srcIn),
         height: 16,
       ),
       title: Text(
         title,
-        style: TextStyle(color: Colors.white54),
+        style: TextStyle(color: const Color.fromARGB(137, 0, 0, 0)),
       ),
     );
   }

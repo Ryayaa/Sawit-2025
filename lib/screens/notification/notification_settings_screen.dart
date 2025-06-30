@@ -243,8 +243,9 @@ class _NotificationSettingsScreenState
     return Scaffold(
       key: context.read<MenuAppController>().scaffoldKey,
       drawer: const SideMenu(),
+      backgroundColor: Colors.white, // <-- Tambahkan ini!
       body: Container(
-        color: const Color(0xFFF5F6FA),
+        color: Colors.white, // <-- Pastikan ini juga putih
         child: SafeArea(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
