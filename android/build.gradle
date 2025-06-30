@@ -4,12 +4,15 @@ buildscript {
         google()
         jcenter()
     }
-
     dependencies {
-        classpath 'com.google.gms.google-services:4.4.2' 
+        classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.android.tools.build:gradle:4.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+}
+
+plugins {
+    id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
 }
 
 allprojects {
@@ -27,6 +30,6 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.register("clean", Delete) {
+    delete rootProject.layout.buildDirectory
 }
