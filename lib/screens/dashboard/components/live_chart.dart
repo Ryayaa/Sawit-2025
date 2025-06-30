@@ -1,16 +1,18 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Tambahkan ini
 import '../../../models/sensor_reading.dart';
+import '../../../services/firebase_service.dart'; // Tambahkan ini
 
 class LiveChart extends StatelessWidget {
   final String moduleName;
-  final Stream<List<SensorReading>> dataStream;
-  final VoidCallback? onTapModule; // Tambahkan ini
+  final String moduleId; // Tambahkan ini
+  final VoidCallback? onTapModule;
 
   const LiveChart({
     Key? key,
     required this.moduleName,
-    required this.dataStream,
+    required this.moduleId, // Tambahkan ini
     this.onTapModule,
   }) : super(key: key);
 
@@ -19,7 +21,8 @@ class LiveChart extends StatelessWidget {
     return GestureDetector(
       onTap: onTapModule,
       child: StreamBuilder<List<SensorReading>>(
-        stream: dataStream,
+        stream: FirebaseService()
+            .getModuleData(moduleId), // Ambil data dari Firebase
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
@@ -79,14 +82,12 @@ class LiveChart extends StatelessWidget {
                             if (value.toInt() >= sortedReadings.length) {
                               return const Text('');
                             }
-                            final currentHour = DateTime.now().hour;
-                            final pointHour = (currentHour -
-                                    (sortedReadings.length - 1 - value.toInt())) %
-                                24;
+                            // Tampilkan jam dari timestamp asli
+                            final dt = sortedReadings[value.toInt()].timestamp;
                             return Transform.rotate(
                               angle: -0.5,
                               child: Text(
-                                '${pointHour.toString().padLeft(2, '0')}:00',
+                                DateFormat('HH:mm').format(dt),
                                 style: const TextStyle(
                                   fontSize: 9,
                                   color: Colors.black54,
@@ -122,7 +123,8 @@ class LiveChart extends StatelessWidget {
                       LineChartBarData(
                         spots: List.generate(
                           sortedReadings.length,
-                          (i) => FlSpot(i.toDouble(), sortedReadings[i].temperature),
+                          (i) => FlSpot(
+                              i.toDouble(), sortedReadings[i].temperature),
                         ),
                         isCurved: true,
                         color: Colors.red,
@@ -133,7 +135,8 @@ class LiveChart extends StatelessWidget {
                       LineChartBarData(
                         spots: List.generate(
                           sortedReadings.length,
-                          (i) => FlSpot(i.toDouble(), sortedReadings[i].humidity),
+                          (i) =>
+                              FlSpot(i.toDouble(), sortedReadings[i].humidity),
                         ),
                         isCurved: true,
                         color: Colors.blue,

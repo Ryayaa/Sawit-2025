@@ -10,24 +10,23 @@ import '../../../constants.dart';
 class HeaderUser extends StatelessWidget {
   final String title;
   final VoidCallback? onMenuPressed;
-  const HeaderUser({Key? key, this.title = "Dashboard", this.onMenuPressed})
-      : super(key: key);
+  const HeaderUser({
+    Key? key,
+    this.title = "Dashboard",
+    this.onMenuPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         if (!Responsive.isDesktop(context))
-          Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: onMenuPressed ??
-                  () {
-                    Scaffold.of(context).openDrawer();
-                  },
-            ),
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed:
+                onMenuPressed ?? context.read<MenuAppController>().controlMenu,
           ),
-        if (Responsive.isDesktop(context))
+        if (!Responsive.isMobile(context))
           Text(
             title,
             style: const TextStyle(
@@ -37,14 +36,14 @@ class HeaderUser extends StatelessWidget {
             ),
           ),
         const Spacer(),
-        const ProfileCardUser(),
+        const ProfileCard(),
       ],
     );
   }
 }
 
-class ProfileCardUser extends StatelessWidget {
-  const ProfileCardUser({Key? key}) : super(key: key);
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -90,15 +89,15 @@ class ProfileCardUser extends StatelessWidget {
           );
         }
       },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
+      itemBuilder: (BuildContext context) => const <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
           value: 'profile',
-          child: _ProfileMenuItemUser(),
+          child: _ProfileMenuItem(),
         ),
-        const PopupMenuDivider(),
-        const PopupMenuItem<String>(
+        PopupMenuDivider(),
+        PopupMenuItem<String>(
           value: 'logout',
-          child: _LogoutMenuItemUser(),
+          child: _LogoutMenuItem(),
         ),
       ],
       child: Container(
@@ -127,8 +126,8 @@ class ProfileCardUser extends StatelessWidget {
   }
 }
 
-class _ProfileMenuItemUser extends StatelessWidget {
-  const _ProfileMenuItemUser();
+class _ProfileMenuItem extends StatelessWidget {
+  const _ProfileMenuItem();
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +141,8 @@ class _ProfileMenuItemUser extends StatelessWidget {
   }
 }
 
-class _LogoutMenuItemUser extends StatelessWidget {
-  const _LogoutMenuItemUser();
+class _LogoutMenuItem extends StatelessWidget {
+  const _LogoutMenuItem();
 
   @override
   Widget build(BuildContext context) {

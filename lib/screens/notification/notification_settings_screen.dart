@@ -39,40 +39,68 @@ class _NotificationSettingsScreenState
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    _listenSettings();
   }
 
-  Future<void> _loadSettings() async {
+  void _listenSettings() {
     final dbRef = FirebaseDatabase.instance.ref();
-    final snapshot = await dbRef.child('notification_settings').get();
-    if (snapshot.exists) {
-      final data = Map<String, dynamic>.from(snapshot.value as Map);
-      setState(() {
-        _temperatureEnabled = data['tempEnabled'] ?? true;
-        _humidityEnabled = data['humidityEnabled'] ?? true;
-        _temperatureController.text = (data['tempThreshold'] ?? 40).toString();
-        _humidityController.text = (data['humidityThreshold'] ?? 30).toString();
-        _tempMinController.text = (data['tempMinNormal'] ?? 25).toString();
-        _tempMaxController.text = (data['tempMaxNormal'] ?? 35).toString();
-        _humidityMinController.text =
-            (data['humidityMinNormal'] ?? 60).toString();
-        _humidityMaxController.text =
-            (data['humidityMaxNormal'] ?? 80).toString();
-      });
-    }
+    dbRef.child('notification_settings').onValue.listen((event) {
+      if (event.snapshot.exists) {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+        setState(() {
+          _temperatureEnabled = data['tempEnabled'] ?? true;
+          _humidityEnabled = data['humidityEnabled'] ?? true;
+          _temperatureController.text =
+              (data['tempThreshold'] ?? 40).toString();
+          _humidityController.text =
+              (data['humidityThreshold'] ?? 30).toString();
+          _tempMinController.text = (data['tempMinNormal'] ?? 25).toString();
+          _tempMaxController.text = (data['tempMaxNormal'] ?? 35).toString();
+          _humidityMinController.text =
+              (data['humidityMinNormal'] ?? 60).toString();
+          _humidityMaxController.text =
+              (data['humidityMaxNormal'] ?? 80).toString();
+        });
+      }
+    });
   }
 
   Future<void> _saveSettings() async {
+    double tempMin = double.tryParse(_tempMinController.text) ?? 0;
+    double tempMax = double.tryParse(_tempMaxController.text) ?? 0;
+    double humidityMin = double.tryParse(_humidityMinController.text) ?? 0;
+    double humidityMax = double.tryParse(_humidityMaxController.text) ?? 0;
+
+    if (tempMin > tempMax) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Min suhu tidak boleh lebih besar dari Max suhu'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (humidityMin > humidityMax) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Min kelembaban tidak boleh lebih besar dari Max kelembaban'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final dbRef = FirebaseDatabase.instance.ref();
     await dbRef.child('notification_settings').set({
       'tempEnabled': _temperatureEnabled,
       'humidityEnabled': _humidityEnabled,
       'tempThreshold': double.parse(_temperatureController.text),
       'humidityThreshold': double.parse(_humidityController.text),
-      'tempMinNormal': double.parse(_tempMinController.text),
-      'tempMaxNormal': double.parse(_tempMaxController.text),
-      'humidityMinNormal': double.parse(_humidityMinController.text),
-      'humidityMaxNormal': double.parse(_humidityMaxController.text),
+      'tempMinNormal': tempMin,
+      'tempMaxNormal': tempMax,
+      'humidityMinNormal': humidityMin,
+      'humidityMaxNormal': humidityMax,
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

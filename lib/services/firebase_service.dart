@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 import '../models/sensor_reading.dart';
 import '../models/gps_coordinate.dart';
 import '../models/sensor_data.dart';
@@ -9,6 +10,18 @@ import '../services/cache_service.dart';
 class FirebaseService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final CacheService _cacheService = CacheService();
+
+  // Helper parsing timestamp sesuai format baru
+  DateTime? _parseTimestamp(dynamic value) {
+    if (value is String) {
+      try {
+        return DateFormat('yyyy-MM-dd HH:mm:ss').parseStrict(value);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
 
   // Optimasi stream data sensor dengan caching dan batasan data
   Stream<List<SensorReading>> getModuleData(String moduleId) {
@@ -21,28 +34,26 @@ class FirebaseService {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
       if (data == null) return [];
 
-      try {
-        final List<SensorReading> readings = [];
-        data.forEach((key, value) {
-          if (value is Map) {
-            try {
-              final reading = Map<String, dynamic>.from(value as Map);
+      final List<SensorReading> readings = [];
+      data.forEach((key, value) {
+        if (value is Map) {
+          try {
+            final reading = Map<String, dynamic>.from(value as Map);
+            // Validasi timestamp
+            if (_parseTimestamp(reading['timestamp']) != null) {
               readings.add(SensorReading.fromJson(reading));
-            } catch (e) {
-              print('Error parsing individual reading: $e');
             }
+          } catch (e) {
+            print('Error parsing individual reading: $e');
           }
-        });
+        }
+      });
 
-        return readings..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      } catch (e) {
-        print('Error parsing data: $e');
-        return [];
-      }
+      return readings..sort((a, b) => b.timestamp.compareTo(a.timestamp));
     });
   }
 
-  // Fix method getLatestReadings
+  // Mendapatkan 1 data terbaru
   Future<List<SensorReading>> getLatestReadings(String moduleId) async {
     try {
       final snapshot = await _database
@@ -54,30 +65,31 @@ class FirebaseService {
       if (!snapshot.exists || snapshot.value == null) return [];
 
       final data = snapshot.value as Map<dynamic, dynamic>;
-      return data.entries.map((e) {
-        final reading = e.value as Map<dynamic, dynamic>;
-        return SensorReading(
-          temperature: _parseDouble(reading['temperature']),
-          humidity: _parseDouble(reading['humidity']),
-          timestamp: DateTime.fromMillisecondsSinceEpoch(
-            _parseInt(reading['timestamp']),
-          ),
-        );
-      }).toList();
+      return data.entries
+          .map((e) {
+            final reading = Map<String, dynamic>.from(e.value as Map);
+            if (_parseTimestamp(reading['timestamp']) != null) {
+              return SensorReading.fromJson(reading);
+            }
+            throw Exception('Invalid timestamp');
+          })
+          .whereType<SensorReading>()
+          .toList();
     } catch (e) {
       print('Error getting latest readings: $e');
       return [];
     }
   }
 
-  // Fix method updateSensorReading
+  // Update data sensor (timestamp string)
   Future<void> updateSensorReading(
       String moduleId, SensorReading reading) async {
     try {
       await _database.child('$moduleId/readings').push().set({
         'temperature': reading.temperature,
         'humidity': reading.humidity,
-        'timestamp': reading.timestamp.millisecondsSinceEpoch,
+        'timestamp':
+            DateFormat('yyyy-MM-dd HH:mm:ss').format(reading.timestamp),
       });
     } catch (e) {
       print('Error updating sensor reading: $e');
@@ -85,7 +97,7 @@ class FirebaseService {
     }
   }
 
-  // Fix method getLatestReading
+  // Mendapatkan 1 data terbaru (SensorReading)
   Future<SensorReading?> getLatestReading(String moduleId) async {
     try {
       final snapshot = await _database
@@ -100,13 +112,10 @@ class FirebaseService {
           snapshot.value as Map<dynamic, dynamic>;
       final data = Map<String, dynamic>.from(value.values.first as Map);
 
-      return SensorReading(
-        temperature: _parseDouble(data['temperature']),
-        humidity: _parseDouble(data['humidity']),
-        timestamp: DateTime.fromMillisecondsSinceEpoch(
-          _parseInt(data['timestamp']),
-        ),
-      );
+      if (_parseTimestamp(data['timestamp']) != null) {
+        return SensorReading.fromJson(data);
+      }
+      return null;
     } catch (e) {
       print('Error getting latest reading: $e');
       return null;
@@ -127,7 +136,9 @@ class FirebaseService {
           List<SensorReading> moduleReadings = [];
           readings.forEach((key, value) {
             final reading = Map<String, dynamic>.from(value as Map);
-            moduleReadings.add(SensorReading.fromJson(reading));
+            if (_parseTimestamp(reading['timestamp']) != null) {
+              moduleReadings.add(SensorReading.fromJson(reading));
+            }
           });
           allModules[moduleId] = moduleReadings;
         }
@@ -219,13 +230,5 @@ class FirebaseService {
     if (value is int) return value.toDouble();
     if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
-  }
-
-  int _parseInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
   }
 }

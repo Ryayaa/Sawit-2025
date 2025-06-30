@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Tambahkan ini untuk parsing tanggal
 
 class SensorReading {
   final double temperature;
@@ -11,6 +12,20 @@ class SensorReading {
     required this.timestamp,
   });
 
+  // Properti untuk tanggal dan jam hasil pembulatan
+  String get dateString => DateFormat('yyyy-MM-dd').format(timestamp);
+
+  String get roundedHourString {
+    int hour = timestamp.hour;
+    int minute = timestamp.minute;
+    // Pembulatan jam
+    if (minute >= 50) {
+      hour = (hour + 1) % 24;
+    }
+    // Format jam:menit
+    return '${hour.toString().padLeft(2, '0')}:00';
+  }
+
   factory SensorReading.fromJson(Map<String, dynamic> json) {
     double parseDouble(dynamic value) {
       if (value == null) return 0.0;
@@ -20,20 +35,28 @@ class SensorReading {
       return 0.0;
     }
 
-    int parseInt(dynamic value) {
-      if (value == null) return 0;
-      if (value is int) return value;
-      if (value is double) return value.toInt();
-      if (value is String) return int.tryParse(value) ?? 0;
-      return 0;
+    // Parsing timestamp dengan format "yyyy-MM-dd HH:mm:ss"
+    DateTime? parseTimestamp(dynamic value) {
+      if (value is String) {
+        try {
+          return DateFormat('yyyy-MM-dd HH:mm:ss').parseStrict(value);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    final timestamp = parseTimestamp(json['timestamp']);
+    if (timestamp == null) {
+      // Data tidak valid, return null
+      throw FormatException('Invalid timestamp format');
     }
 
     return SensorReading(
       temperature: parseDouble(json['temperature']),
       humidity: parseDouble(json['humidity']),
-      timestamp: DateTime.fromMillisecondsSinceEpoch(
-        parseInt(json['timestamp']),
-      ),
+      timestamp: timestamp,
     );
   }
 }
@@ -54,9 +77,31 @@ class _SensorPageState extends State<SensorPage> {
   }
 
   Future<List<SensorReading>> _fetchSensorReadings() async {
-    // Implementasi pengambilan data sensor
-    // Return empty list as placeholder
-    return [];
+    // TODO: Ganti dengan pengambilan data asli dari database
+    final List<Map<String, dynamic>> rawData = [
+      // Contoh data
+      {
+        "temperature": "30.00",
+        "humidity": "75.90",
+        "timestamp": "2025-06-29 19:14:59"
+      },
+      {
+        "temperature": "31.10",
+        "humidity": "80.00",
+        "timestamp": "484" // Ini akan diabaikan
+      },
+    ];
+
+    // Filter dan parsing hanya data dengan timestamp valid
+    List<SensorReading> readings = [];
+    for (var item in rawData) {
+      try {
+        readings.add(SensorReading.fromJson(item));
+      } catch (_) {
+        // Abaikan data tidak valid
+      }
+    }
+    return readings;
   }
 
   Future<void> _refreshData() async {

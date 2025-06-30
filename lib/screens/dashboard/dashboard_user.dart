@@ -17,12 +17,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
-import '../history/user_history_screen.dart';
-
-const kPrimaryColor = Color(0xFF3A7D44);
-const kAccentColor = Color(0xFF91C788);
-const kCardBackground = Color(0xFFF9F9F9);
-const kShadowColor = Color(0xFFE0E0E0);
+import 'components/gps_widget.dart'; // Tambahkan import ini
 
 class DashboardUser extends StatelessWidget {
   const DashboardUser({super.key});
@@ -74,29 +69,33 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     'module3': [],
   };
 
+  late Future<void> _initialization;
+
   @override
   void initState() {
     super.initState();
+    _initialization = _initializeData();
+  }
+
+  Future<void> _initializeData() async {
     _setupModuleListeners();
     _listenRangeSettings();
   }
 
-  // Listener untuk update data sensor
   void _setupModuleListeners() {
     try {
-      ['module1', 'module2', 'module3'].forEach((moduleId) {
+      for (final moduleId in ['module1', 'module2', 'module3']) {
         final subscription = _firebaseService.getModuleData(moduleId).listen(
               (data) => _checkTemperature(moduleId, data),
               onError: (error) => print('Error listening to $moduleId: $error'),
             );
         _subscriptions.add(subscription);
-      });
+      }
     } catch (e) {
       print('Error in setup listeners: $e');
     }
   }
 
-  // Listener untuk update threshold/range dari Firebase secara real-time
   void _listenRangeSettings() {
     final dbRef = FirebaseDatabase.instance.ref();
     dbRef.child('notification_settings').onValue.listen((event) {
@@ -209,8 +208,16 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     );
   }
 
-  void _refreshData() {
-    setState(() {});
+  Future<void> _refreshData() async {
+    for (final sub in _subscriptions) {
+      await sub.cancel();
+    }
+    _subscriptions.clear();
+    _setupModuleListeners();
+    _listenRangeSettings();
+    setState(() {
+      _moduleAlerts.updateAll((key, value) => false);
+    });
   }
 
   @override
@@ -227,323 +234,272 @@ class _DashboardUserViewState extends State<DashboardUserView> {
     return Scaffold(
       key: context.read<MenuAppController>().scaffoldKey,
       drawer: const SideMenuUser(),
-      body: Container(
-        color: kCardBackground,
-        child: SafeArea(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (Responsive.isDesktop(context))
-                const Expanded(
-                  flex: 1,
-                  child: SideMenuUser(),
-                ),
-              Expanded(
-                flex: 5,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.all(defaultPadding),
-                  child: Column(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: DefaultTextStyle(
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold),
-                          child: HeaderUser(),
-                        ),
-                      ),
-                      const SizedBox(),
-                      StreamBuilder<String>(
-                        stream: AuthService().getUserDisplayName(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, top: 16.0, bottom: 4.0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Selamat datang, ${snapshot.data ?? 'User'} 👋",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green[900],
-                                ),
-                              ),
+      body: FutureBuilder(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          return Container(
+            color: Colors.white, // Ganti kCardBackground dengan Colors.white
+            child: SafeArea(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (Responsive.isDesktop(context))
+                    const Expanded(
+                      flex: 1,
+                      child: SideMenuUser(),
+                    ),
+                  Expanded(
+                    flex: 5,
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.all(defaultPadding),
+                      child: Column(
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: DefaultTextStyle(
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold),
+                              child: HeaderUser(),
                             ),
-                          );
-                        },
-                      ),
-                      _AlertSection(
-                        getCombinedAlertMessage: _getCombinedAlertMessage,
-                        buildAlertNotification: _buildAlertNotification,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CuacaBesokWidget(),
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isMobile = constraints.maxWidth < 400;
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                  child: _buildModuleStatusCard(
-                                    "Module 1",
-                                    Icons.memory,
-                                    Colors.green,
-                                    _checkModuleStatus('module1'),
-                                    isCompact: isMobile,
-                                  ),
-                                ),
-                                SizedBox(width: isMobile ? 4 : 12),
-                                Flexible(
-                                  child: _buildModuleStatusCard(
-                                    "Module 2",
-                                    Icons.memory,
-                                    Colors.orange,
-                                    _checkModuleStatus('module2'),
-                                    isCompact: isMobile,
-                                  ),
-                                ),
-                                SizedBox(width: isMobile ? 4 : 12),
-                                Flexible(
-                                  child: _buildModuleStatusCard(
-                                    "Module 3",
-                                    Icons.memory,
-                                    Colors.blue,
-                                    _checkModuleStatus('module3'),
-                                    isCompact: isMobile,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      const _TargetKelembapan(),
-                      const SizedBox(height: defaultPadding),
-                      _ModuleChartCard(
-                        moduleName: "Module 1",
-                        dataStream: _firebaseService.getModuleData('module1'),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/user_history',
-                            arguments: {'module': 'Module 1'},
-                          );
-                        },
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      _ModuleChartCard(
-                        moduleName: "Module 2",
-                        dataStream: _firebaseService.getModuleData('module2'),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/user_history',
-                            arguments: {'module': 'Module 2'},
-                          );
-                        },
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      _ModuleChartCard(
-                        moduleName: "Module 3",
-                        dataStream: _firebaseService.getModuleData('module3'),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/user_history',
-                            arguments: {'module': 'Module 3'},
-                          );
-                        },
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: DefaultTextStyle(
-                          style: const TextStyle(color: Colors.black),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: _refreshData,
-                                    icon: const Icon(Icons.refresh, size: 18),
-                                    label: const Text("Refresh Data"),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: kPrimaryColor,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
+                          ),
+                          const SizedBox(),
+                          StreamBuilder<String>(
+                            stream: AuthService().getUserDisplayName(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, top: 16.0, bottom: 4.0),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Selamat datang, ${snapshot.data ?? 'User'} 👋",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green[900],
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              const RecentMeasurementsTable(),
-                              StreamBuilder<List<SensorReading>>(
-                                stream:
-                                    _firebaseService.getModuleData('module1'),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.isEmpty) {
-                                    return const Text('Belum ada data');
-                                  }
-                                  final lastReading = snapshot.data!.last;
-                                  return Text(
-                                    "Suhu: ${lastReading.temperature}°C, Kelembapan: ${lastReading.humidity}%",
-                                    style: const TextStyle(fontSize: 14),
-                                  );
-                                },
-                              ),
-                            ],
+                                ),
+                              );
+                            },
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: defaultPadding),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: StreamBuilder<GPSCoordinate>(
-                          stream: _firebaseService.getModule1Location(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            }
-                            if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            }
-                            final locationData = snapshot.data;
-                            return Card(
-                              color: kPrimaryColor,
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    height: 150,
-                                    width: double.infinity,
-                                    child: FlutterMap(
-                                      options: MapOptions(
-                                        center: LatLng(
-                                          locationData!.latitude,
-                                          locationData.longitude,
-                                        ),
-                                        zoom: 15.0,
+                          _AlertSection(
+                            getCombinedAlertMessage: _getCombinedAlertMessage,
+                            buildAlertNotification: _buildAlertNotification,
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: CuacaBesokWidget(),
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isMobile = constraints.maxWidth < 400;
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 1",
+                                        Icons.memory,
+                                        Colors.green,
+                                        _checkModuleStatus('module1'),
+                                        isCompact: isMobile,
                                       ),
+                                    ),
+                                    SizedBox(width: isMobile ? 4 : 12),
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 2",
+                                        Icons.memory,
+                                        Colors.orange,
+                                        _checkModuleStatus('module2'),
+                                        isCompact: isMobile,
+                                      ),
+                                    ),
+                                    SizedBox(width: isMobile ? 4 : 12),
+                                    Flexible(
+                                      child: _buildModuleStatusCard(
+                                        "Module 3",
+                                        Icons.memory,
+                                        Colors.blue,
+                                        _checkModuleStatus('module3'),
+                                        isCompact: isMobile,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Target Kelembapan",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueGrey[800]),
+                                ),
+                                const SizedBox(height: 8),
+                                // Progress bar langsung hitung di widget, tanpa fungsi tambahan
+                                Builder(
+                                  builder: (context) {
+                                    List<double> humidities = [];
+                                    for (var readings
+                                        in _moduleReadings.values) {
+                                      if (readings.isNotEmpty) {
+                                        humidities.add(readings.last.humidity);
+                                      }
+                                    }
+                                    double avgHumidity = humidities.isNotEmpty
+                                        ? humidities.reduce((a, b) => a + b) /
+                                            humidities.length
+                                        : 0.0;
+                                    double progress =
+                                        (avgHumidity - _humidityMinNormal) /
+                                            (_humidityMaxNormal -
+                                                _humidityMinNormal);
+                                    progress = progress.clamp(0.0, 1.0);
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        TileLayer(
-                                          urlTemplate:
-                                              "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                          subdomains: const ['a', 'b', 'c'],
+                                        LinearProgressIndicator(
+                                          value: progress,
+                                          minHeight: 10,
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.green),
                                         ),
-                                        MarkerLayer(
-                                          markers: [
-                                            Marker(
-                                              width: 80.0,
-                                              height: 80.0,
-                                              point: LatLng(
-                                                locationData.latitude,
-                                                locationData.longitude,
-                                              ),
-                                              child: const Icon(
-                                                Icons.location_on,
-                                                color: Colors.red,
-                                                size: 40,
-                                              ),
-                                            ),
-                                          ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${(progress * 100).toStringAsFixed(0)}% tercapai dari target 100%",
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black54),
                                         ),
                                       ],
-                                    ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          _ModuleChartCard(
+                            moduleName: "Module 1",
+                            dataStream:
+                                _firebaseService.getModuleData('module1'),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/user_history',
+                                arguments: {'module': 'module1'},
+                              );
+                            },
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          _ModuleChartCard(
+                            moduleName: "Module 2",
+                            dataStream:
+                                _firebaseService.getModuleData('module2'),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/user_history',
+                                arguments: {'module': 'module2'},
+                              );
+                            },
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          _ModuleChartCard(
+                            moduleName: "Module 3",
+                            dataStream:
+                                _firebaseService.getModuleData('module3'),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/user_history',
+                                arguments: {'module': 'module3'},
+                              );
+                            },
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: DefaultTextStyle(
+                              style: const TextStyle(color: Colors.black),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ElevatedButton.icon(
+                                        onPressed: _refreshData,
+                                        icon:
+                                            const Icon(Icons.refresh, size: 18),
+                                        label: const Text("Refresh Data"),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green[700],
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                    ],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4.0),
-                                    child: Text(
-                                      "Update terakhir: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}",
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.white),
-                                    ),
-                                  ),
+                                  const SizedBox(height: 8),
+                                  const RecentMeasurementsTable(),
                                 ],
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: GPSMapWidget(moduleName: "Module 1"),
+                          ),
+                          const SizedBox(height: defaultPadding),
+                          const _Footer(),
+                        ],
                       ),
-                      const SizedBox(height: defaultPadding),
-                      const _Footer(),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
-        decoration: BoxDecoration(
-          color: kCardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: kPrimaryColor, width: 2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: kPrimaryColor),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                color: kPrimaryColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                // color: Colors.black),
-                // textAlign: TextAlign.center,
+                ],
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold, color: color),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -565,12 +521,12 @@ class _DashboardUserViewState extends State<DashboardUserView> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color, width: 2), // border sesuai parameter
+          border: Border.all(color: color, width: 2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: isCompact ? 18 : 24, color: color), // icon sesuai parameter
+            Icon(icon, size: isCompact ? 18 : 24, color: color),
             SizedBox(height: isCompact ? 4 : 8),
             Text(
               moduleName,
@@ -661,58 +617,13 @@ class _AlertSection extends StatelessWidget {
         Builder(
           builder: (context) {
             String humidityMessage = getCombinedAlertMessage('humidity');
-            final _DashboardUserViewState? state =
-                context.findAncestorStateOfType<_DashboardUserViewState>();
-            if (state != null) {
-              // print('ALERT STATE: ${state._moduleAlerts['module1_humidity']}');
-            }
-            if (humidityMessage.isNotEmpty &&
-                state != null &&
-                (state._moduleAlerts['module1_humidity'] == true ||
-                    state._moduleAlerts['module2_humidity'] == true ||
-                    state._moduleAlerts['module3_humidity'] == true)) {
+            if (humidityMessage.isNotEmpty) {
               return buildAlertNotification(humidityMessage, true);
             }
             return const SizedBox.shrink();
           },
         ),
       ],
-    );
-  }
-}
-
-class _TargetKelembapan extends StatelessWidget {
-  const _TargetKelembapan();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Target Kelembapan",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.blueGrey[800]),
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            backgroundColor: kShadowColor,
-            valueColor: AlwaysStoppedAnimation<Color>(kAccentColor),
-// ),
-            value: 0.71,
-            minHeight: 10,
-            // backgroundColor: Colors.grey[300],
-            // valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Target Kelembapan",
-            style: TextStyle(color: kPrimaryColor),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -742,7 +653,11 @@ class _ModuleChartCard extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           child: LiveChart(
             moduleName: moduleName,
-            dataStream: dataStream,
+            moduleId: moduleName == "Module 1"
+                ? 'module1'
+                : moduleName == "Module 2"
+                    ? 'module2'
+                    : 'module3',
             onTapModule: onTap,
           ),
         ),

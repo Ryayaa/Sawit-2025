@@ -12,14 +12,11 @@ import 'components/recent_measurements_table.dart';
 import '../../services/firebase_service.dart';
 import '../../models/sensor_reading.dart';
 import '../../services/notification_service.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:intl/intl.dart';
-import '../../models/gps_coordinate.dart';
 import 'dart:async';
 import '../../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
+import '../dashboard/components/gps_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -410,9 +407,8 @@ class _DashboardViewState extends State<DashboardView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
-                                  moduleName: "Module 1",
-                                  dataStream:
-                                      _firebaseService.getModuleData('module1'),
+                                  moduleName: 'Module 1',
+                                  moduleId: 'module1',
                                   onTapModule: () {
                                     Navigator.pushNamed(
                                       context,
@@ -441,8 +437,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
                                   moduleName: "Module 2",
-                                  dataStream:
-                                      _firebaseService.getModuleData('module2'),
+                                  moduleId: 'module2',
                                   onTapModule: () {
                                     Navigator.pushNamed(
                                       context,
@@ -469,8 +464,7 @@ class _DashboardViewState extends State<DashboardView> {
                                 padding: const EdgeInsets.all(12.0),
                                 child: LiveChart(
                                   moduleName: "Module 3",
-                                  dataStream:
-                                      _firebaseService.getModuleData('module3'),
+                                  moduleId: 'module3',
                                   onTapModule: () {
                                     Navigator.pushNamed(
                                       context,
@@ -524,118 +518,7 @@ class _DashboardViewState extends State<DashboardView> {
                           // GPS placeholder tanpa Card
                           Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: StreamBuilder<GPSCoordinate>(
-                              stream: _firebaseService.getModule1Location(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasError) {
-                                  return Card(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.error_outline,
-                                              color: Colors.red, size: 48),
-                                          const SizedBox(height: 16),
-                                          Text(
-                                              'Error loading GPS data: ${snapshot.error}'),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                if (!snapshot.hasData ||
-                                    (snapshot.data?.latitude == 0 &&
-                                        snapshot.data?.longitude == 0)) {
-                                  return const Card(
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16.0),
-                                      child: Center(
-                                        child: Text('No GPS data available'),
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                final location = snapshot.data!;
-                                final point = LatLng(
-                                    location.latitude, location.longitude);
-
-                                return Container(
-                                  height: 300,
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        'Lokasi Modul 1',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green[900],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Expanded(
-                                        child: Card(
-                                          elevation: 4,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(16),
-                                            child: FlutterMap(
-                                              options: MapOptions(
-                                                center: point,
-                                                zoom: 15,
-                                                minZoom: 3,
-                                                maxZoom: 18,
-                                                enableScrollWheel: true,
-                                                interactionOptions:
-                                                    const InteractionOptions(
-                                                  enableMultiFingerGestureRace:
-                                                      true,
-                                                  flags: InteractiveFlag.all,
-                                                ),
-                                              ),
-                                              children: [
-                                                TileLayer(
-                                                  urlTemplate:
-                                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                  userAgentPackageName:
-                                                      'com.example.sawit',
-                                                ),
-                                                MarkerLayer(
-                                                  markers: [
-                                                    Marker(
-                                                      point: point,
-                                                      child: const Icon(
-                                                        Icons.location_on,
-                                                        color:
-                                                            Color(0xFF3A7D44),
-                                                        size: 40,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Last Updated: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.fromMillisecondsSinceEpoch(location.lastUpdate ?? 0))}',
-                                        style: const TextStyle(
-                                            color: Colors.black54),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                            child: GPSMapWidget(),
                           ),
                           const SizedBox(height: defaultPadding),
                           Padding(

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// import '../../../screens/dashboard/dashboard_user.dart';
-// import '../../../screens/profil/profil_user.dart';
-// import '../../../screens/history/user_history_screen.dart';
+import '../../../screens/history/user_history_screen.dart';
 
 class SideMenuUser extends StatelessWidget {
   const SideMenuUser({Key? key}) : super(key: key);
@@ -36,6 +34,23 @@ class SideMenuUser extends StatelessWidget {
               },
             ),
             DrawerListTileUser(
+              title: "Log History",
+              svgSrc: "assets/icons/menu_doc.svg",
+              routeName: '/user_history',
+              selected: currentRoute == '/user_history',
+              press: () {
+                if (currentRoute != '/user_history') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => UserHistoryScreen()),
+                  );
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+            DrawerListTileUser(
               title: "Profil",
               svgSrc: "assets/icons/menu_profile.svg",
               routeName: '/profil_user',
@@ -48,19 +63,7 @@ class SideMenuUser extends StatelessWidget {
                 }
               },
             ),
-            DrawerListTileUser(
-              title: "History",
-              svgSrc: "assets/icons/menu_doc.svg",
-              routeName: '/user_history',
-              selected: currentRoute == '/user_history',
-              press: () {
-                if (currentRoute != '/user_history') {
-                  Navigator.pushReplacementNamed(context, '/user_history');
-                } else {
-                  Navigator.pop(context);
-                }
-              },
-            ),
+            // Tambahkan menu lain sesuai kebutuhan Anda
             const SizedBox(height: 24),
           ],
         ),
@@ -156,10 +159,12 @@ class DrawerListTileUser extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: ListTile(
           onTap: press,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: Container(
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
+              color:
+                  selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
               shape: BoxShape.circle,
             ),
             padding: const EdgeInsets.all(8),

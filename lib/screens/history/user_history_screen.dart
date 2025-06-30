@@ -1,27 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:admin/screens/main/components/side_menu_user.dart';
+import 'package:admin/controllers/menu_app_controller.dart';
 import 'package:admin/responsive.dart';
+import 'package:provider/provider.dart';
+import '../../services/firebase_service.dart'; // Tambahkan ini
+import '../../models/sensor_reading.dart'; // Tambahkan ini
 import '../dashboard/components/header_user.dart';
 
 const kPrimaryColor = Color(0xFF3A7D44);
 const kAccentColor = Color(0xFF91C788);
 const kCardBackground = Color(0xFFF9F9F9);
+const kShadowColor = Color(0xFFE0E0E0);
 
 class UserHistoryScreen extends StatefulWidget {
   const UserHistoryScreen({Key? key}) : super(key: key);
 
   @override
-  State<UserHistoryScreen> createState() => _UserHistoryScreenState();
+  State<UserHistoryScreen> createState() => _UserHistoryScreen();
 }
 
-class _UserHistoryScreenState extends State<UserHistoryScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+class _UserHistoryScreen extends State<UserHistoryScreen> {
   DateTime? startDate;
   DateTime? endDate;
   DateTime? selectedDateTime;
   String selectedModule = 'All';
   final List<String> modules = ['All', 'Module 1', 'Module 2', 'Module 3'];
+
+  // Tambahkan list untuk menyimpan data dari firebase
+  Map<String, List<SensorReading>> allModuleReadings = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAllData();
+  }
 
   @override
   void didChangeDependencies() {
@@ -34,12 +48,22 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     }
   }
 
+  Future<void> _fetchAllData() async {
+    setState(() => isLoading = true);
+    FirebaseService().getAllModulesData().first.then((data) {
+      setState(() {
+        allModuleReadings = data;
+        isLoading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = !Responsive.isDesktop(context);
 
     return Scaffold(
-      key: _scaffoldKey, // <-- pasang key di sini
+      key: context.read<MenuAppController>().scaffoldKey,
       drawer: isMobile ? const SideMenuUser() : null,
       backgroundColor: kCardBackground,
       body: SafeArea(
@@ -55,12 +79,7 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HeaderUser(
-                      title: "Log History",
-                      onMenuPressed: () {
-                        _scaffoldKey.currentState?.openDrawer();
-                      },
-                    ),
+                    const HeaderUser(title: "Log History"),
                     const SizedBox(height: 16),
                     Card(
                       color: Colors.white,
@@ -113,7 +132,10 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                                 ),
                               ),
                             const SizedBox(height: 16),
-                            _buildResponsiveTable(context),
+                            isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator())
+                                : _buildResponsiveTable(context),
                           ],
                         ),
                       ),
@@ -316,40 +338,41 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
 
   List<DataRow> _getFilteredRows() {
     final List<DataRow> rows = [];
-    for (int index = 0; index < 15; index++) {
-      final date = DateTime.now().subtract(Duration(minutes: index * 5));
-      final moduleNum = (index % 3) + 1;
-      final dateOnly = DateTime(date.year, date.month, date.day);
-      final startDateOnly = startDate != null
-          ? DateTime(startDate!.year, startDate!.month, startDate!.day)
-          : null;
-      final endDateOnly = endDate != null
-          ? DateTime(endDate!.year, endDate!.month, endDate!.day)
-          : null;
+    // Ambil data dari allModuleReadings
+    final List<String> filteredModules = selectedModule == 'All'
+        ? ['module1', 'module2', 'module3']
+        : [selectedModule.toLowerCase().replaceAll(' ', '')];
 
-      if (selectedDateTime != null &&
-          DateFormat('yyyy-MM-dd HH:mm').format(date) !=
-              DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)) {
-        continue;
-      }
-      if (startDateOnly != null && dateOnly.isBefore(startDateOnly)) continue;
-      if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) continue;
-      if (selectedModule != 'All' && 'Module $moduleNum' != selectedModule)
-        continue;
+    for (final module in filteredModules) {
+      final readings = allModuleReadings[module] ?? [];
+      for (final reading in readings) {
+        final dateOnly = DateTime(reading.timestamp.year,
+            reading.timestamp.month, reading.timestamp.day);
+        final startDateOnly = startDate != null
+            ? DateTime(startDate!.year, startDate!.month, startDate!.day)
+            : null;
+        final endDateOnly = endDate != null
+            ? DateTime(endDate!.year, endDate!.month, endDate!.day)
+            : null;
 
-      rows.add(DataRow(
-        cells: [
-          DataCell(
-            InkWell(
-              onTap: () {
-                _showDateTimesForModule(context, moduleNum);
-              },
-              child: Row(
+        if (selectedDateTime != null &&
+            DateFormat('yyyy-MM-dd HH:mm').format(reading.timestamp) !=
+                DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)) {
+          continue;
+        }
+        if (startDateOnly != null && dateOnly.isBefore(startDateOnly)) continue;
+        if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) continue;
+
+        rows.add(DataRow(
+          cells: [
+            DataCell(
+              Row(
                 children: [
                   const Icon(Icons.memory, color: Colors.blueGrey, size: 18),
                   const SizedBox(width: 6),
                   Text(
-                    "Module $moduleNum",
+                    module[0].toUpperCase() +
+                        module.substring(1), // Module1, Module2, dst
                     style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 15,
@@ -358,35 +381,35 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
                 ],
               ),
             ),
-          ),
-          DataCell(Row(
-            children: [
-              const Icon(Icons.thermostat, color: Colors.orange, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                "${28 + (index % 3)}°C",
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 15,
+            DataCell(Row(
+              children: [
+                const Icon(Icons.thermostat, color: Colors.orange, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  "${reading.temperature}°C",
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-            ],
-          )),
-          DataCell(Row(
-            children: [
-              const Icon(Icons.water_drop, color: Colors.blue, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                "${60 + (index % 3)}%",
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 15,
+              ],
+            )),
+            DataCell(Row(
+              children: [
+                const Icon(Icons.water_drop, color: Colors.blue, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  "${reading.humidity}%",
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-            ],
-          )),
-        ],
-      ));
+              ],
+            )),
+          ],
+        ));
+      }
     }
     return rows;
   }
@@ -423,41 +446,14 @@ class _UserHistoryScreenState extends State<UserHistoryScreen> {
     );
   }
 
-  void _showDateTimesForModule(BuildContext context, int moduleNum) {
-    DateTime? latestDate;
-    for (int index = 0; index < 15; index++) {
-      final date = DateTime.now().subtract(Duration(minutes: index * 5));
-      final modNum = (index % 3) + 1;
-      if (modNum == moduleNum) {
-        if (latestDate == null || date.isAfter(latestDate)) {
-          latestDate = date;
-        }
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Date/Time Terbaru untuk Module $moduleNum'),
-        content: latestDate == null
-            ? const Text('Tidak ada data.')
-            : ListTile(
-                leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
-                title: Text(DateFormat('yyyy-MM-dd HH:mm').format(latestDate)),
-              ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-        ],
-      ),
-    );
-  }
-
   List<DateTime> _getAllDateTimes() {
-    return List.generate(
-        15, (index) => DateTime.now().subtract(Duration(minutes: index * 5)));
+    // Gabungkan semua timestamp dari allModuleReadings
+    final List<DateTime> allDates = [];
+    allModuleReadings.forEach((_, readings) {
+      allDates.addAll(readings.map((e) => e.timestamp));
+    });
+    allDates.sort((a, b) => b.compareTo(a));
+    return allDates;
   }
 
   void _filterByModule(String module) {

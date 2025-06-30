@@ -4,6 +4,8 @@ import 'package:admin/screens/main/components/side_menu.dart';
 import 'package:admin/controllers/menu_app_controller.dart';
 import 'package:admin/responsive.dart';
 import 'package:provider/provider.dart';
+import '../../services/firebase_service.dart'; // Tambahkan ini
+import '../../models/sensor_reading.dart'; // Tambahkan ini
 import '../dashboard/components/header.dart';
 
 const kPrimaryColor = Color(0xFF3A7D44);
@@ -25,14 +27,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String selectedModule = 'All';
   final List<String> modules = ['All', 'Module 1', 'Module 2', 'Module 3'];
 
+  // Tambahkan list untuk menyimpan data dari firebase
+  Map<String, List<SensorReading>> allModuleReadings = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAllData();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && args['module'] != null) {
       selectedModule = args['module'];
       _filterByModule(selectedModule);
     }
+  }
+
+  Future<void> _fetchAllData() async {
+    setState(() => isLoading = true);
+    FirebaseService().getAllModulesData().first.then((data) {
+      setState(() {
+        allModuleReadings = data;
+        isLoading = false;
+      });
+    });
   }
 
   @override
@@ -47,22 +70,22 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!isMobile)
-              const Expanded(flex: 1, child: SideMenu()),
+            if (!isMobile) const Expanded(flex: 1, child: SideMenu()),
             Expanded(
               flex: 5,
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 32, vertical: 16),
+                padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 8 : 32, vertical: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header sudah otomatis ada tombol menu jika mobile
                     const Header(title: "Log History"),
                     const SizedBox(height: 16),
                     Card(
                       color: Colors.white,
                       elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -76,10 +99,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryColor,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                               ),
                               onPressed: () {
-                                _showDateTimeDialog(context, _getAllDateTimes());
+                                _showDateTimeDialog(
+                                    context, _getAllDateTimes());
                               },
                             ),
                             if (selectedDateTime != null)
@@ -89,11 +114,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   children: [
                                     Text(
                                       "Filter: ${DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)}",
-                                      style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          color: kPrimaryColor,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     const SizedBox(width: 8),
                                     IconButton(
-                                      icon: const Icon(Icons.clear, color: Colors.red),
+                                      icon: const Icon(Icons.clear,
+                                          color: Colors.red),
                                       onPressed: () {
                                         setState(() {
                                           selectedDateTime = null;
@@ -104,7 +132,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 ),
                               ),
                             const SizedBox(height: 16),
-                            _buildResponsiveTable(context),
+                            isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator())
+                                : _buildResponsiveTable(context),
                           ],
                         ),
                       ),
@@ -139,7 +170,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   foregroundColor: kPrimaryColor,
                   elevation: 2,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -156,7 +188,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   foregroundColor: kPrimaryColor,
                   elevation: 2,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ),
@@ -171,7 +204,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF0F4F8),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             prefixIcon: const Icon(Icons.memory, color: kPrimaryColor),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -184,7 +218,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             labelText: "Pilih Modul",
             labelStyle: const TextStyle(color: kPrimaryColor),
           ),
-          icon: const Icon(Icons.arrow_drop_down_rounded, color: kPrimaryColor, size: 30),
+          icon: const Icon(Icons.arrow_drop_down_rounded,
+              color: kPrimaryColor, size: 30),
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(12),
           items: modules.map((module) {
@@ -192,7 +227,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               value: module,
               child: Row(
                 children: [
-                  const Icon(Icons.developer_board, size: 20, color: kAccentColor),
+                  const Icon(Icons.developer_board,
+                      size: 20, color: kAccentColor),
                   const SizedBox(width: 8),
                   Text(
                     module,
@@ -222,7 +258,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               Icon(Icons.inbox, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 12),
-              Text("No data found", style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+              Text("No data found",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16)),
             ],
           ),
         ),
@@ -282,7 +319,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _selectDate(bool isStartDate) async {
     final date = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? (startDate ?? DateTime.now()) : (endDate ?? DateTime.now()),
+      initialDate: isStartDate
+          ? (startDate ?? DateTime.now())
+          : (endDate ?? DateTime.now()),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
@@ -299,35 +338,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   List<DataRow> _getFilteredRows() {
     final List<DataRow> rows = [];
-    for (int index = 0; index < 15; index++) {
-      final date = DateTime.now().subtract(Duration(minutes: index * 5));
-      final moduleNum = (index % 3) + 1;
-      final dateOnly = DateTime(date.year, date.month, date.day);
-      final startDateOnly = startDate != null ? DateTime(startDate!.year, startDate!.month, startDate!.day) : null;
-      final endDateOnly = endDate != null ? DateTime(endDate!.year, endDate!.month, endDate!.day) : null;
+    // Ambil data dari allModuleReadings
+    final List<String> filteredModules = selectedModule == 'All'
+        ? ['module1', 'module2', 'module3']
+        : [selectedModule.toLowerCase().replaceAll(' ', '')];
 
-      if (selectedDateTime != null &&
-          DateFormat('yyyy-MM-dd HH:mm').format(date) !=
-              DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)) {
-        continue;
-      }
-      if (startDateOnly != null && dateOnly.isBefore(startDateOnly)) continue;
-      if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) continue;
-      if (selectedModule != 'All' && 'Module $moduleNum' != selectedModule) continue;
+    for (final module in filteredModules) {
+      final readings = allModuleReadings[module] ?? [];
+      for (final reading in readings) {
+        final dateOnly = DateTime(reading.timestamp.year,
+            reading.timestamp.month, reading.timestamp.day);
+        final startDateOnly = startDate != null
+            ? DateTime(startDate!.year, startDate!.month, startDate!.day)
+            : null;
+        final endDateOnly = endDate != null
+            ? DateTime(endDate!.year, endDate!.month, endDate!.day)
+            : null;
 
-      rows.add(DataRow(
-        cells: [
-          DataCell(
-            InkWell(
-              onTap: () {
-                _showDateTimesForModule(context, moduleNum);
-              },
-              child: Row(
+        if (selectedDateTime != null &&
+            DateFormat('yyyy-MM-dd HH:mm').format(reading.timestamp) !=
+                DateFormat('yyyy-MM-dd HH:mm').format(selectedDateTime!)) {
+          continue;
+        }
+        if (startDateOnly != null && dateOnly.isBefore(startDateOnly)) continue;
+        if (endDateOnly != null && dateOnly.isAfter(endDateOnly)) continue;
+
+        rows.add(DataRow(
+          cells: [
+            DataCell(
+              Row(
                 children: [
                   const Icon(Icons.memory, color: Colors.blueGrey, size: 18),
                   const SizedBox(width: 6),
                   Text(
-                    "Module $moduleNum",
+                    module[0].toUpperCase() +
+                        module.substring(1), // Module1, Module2, dst
                     style: const TextStyle(
                       color: Colors.black87,
                       fontSize: 15,
@@ -336,35 +381,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ],
               ),
             ),
-          ),
-          DataCell(Row(
-            children: [
-              const Icon(Icons.thermostat, color: Colors.orange, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                "${28 + (index % 3)}°C",
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 15,
+            DataCell(Row(
+              children: [
+                const Icon(Icons.thermostat, color: Colors.orange, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  "${reading.temperature}°C",
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-            ],
-          )),
-          DataCell(Row(
-            children: [
-              const Icon(Icons.water_drop, color: Colors.blue, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                "${60 + (index % 3)}%",
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 15,
+              ],
+            )),
+            DataCell(Row(
+              children: [
+                const Icon(Icons.water_drop, color: Colors.blue, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  "${reading.humidity}%",
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-            ],
-          )),
-        ],
-      ));
+              ],
+            )),
+          ],
+        ));
+      }
     }
     return rows;
   }
@@ -401,41 +446,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  void _showDateTimesForModule(BuildContext context, int moduleNum) {
-    DateTime? latestDate;
-    // Cari date terbaru untuk moduleNum
-    for (int index = 0; index < 15; index++) {
-      final date = DateTime.now().subtract(Duration(minutes: index * 5));
-      final modNum = (index % 3) + 1;
-      if (modNum == moduleNum) {
-        if (latestDate == null || date.isAfter(latestDate)) {
-          latestDate = date;
-        }
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Date/Time Terbaru untuk Module $moduleNum'),
-        content: latestDate == null
-            ? const Text('Tidak ada data.')
-            : ListTile(
-                leading: const Icon(Icons.calendar_today, color: kPrimaryColor),
-                title: Text(DateFormat('yyyy-MM-dd HH:mm').format(latestDate)),
-              ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
-          ),
-        ],
-      ),
-    );
-  }
-
   List<DateTime> _getAllDateTimes() {
-    return List.generate(15, (index) => DateTime.now().subtract(Duration(minutes: index * 5)));
+    // Gabungkan semua timestamp dari allModuleReadings
+    final List<DateTime> allDates = [];
+    allModuleReadings.forEach((_, readings) {
+      allDates.addAll(readings.map((e) => e.timestamp));
+    });
+    allDates.sort((a, b) => b.compareTo(a));
+    return allDates;
   }
 
   void _filterByModule(String module) {
