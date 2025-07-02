@@ -158,7 +158,7 @@ class _NotificationSettingsScreenState
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2A2D3E),
                       ),
