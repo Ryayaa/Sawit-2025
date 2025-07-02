@@ -349,66 +349,66 @@ class _DashboardUserViewState extends State<DashboardUserView> {
                               },
                             ),
                           ),
-                          const SizedBox(height: defaultPadding),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Target Kelembapan",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blueGrey[800]),
-                                ),
-                                const SizedBox(height: 8),
-                                // Progress bar langsung hitung di widget, tanpa fungsi tambahan
-                                Builder(
-                                  builder: (context) {
-                                    List<double> humidities = [];
-                                    for (var readings
-                                        in _moduleReadings.values) {
-                                      if (readings.isNotEmpty) {
-                                        humidities.add(readings.last.humidity);
-                                      }
-                                    }
-                                    double avgHumidity = humidities.isNotEmpty
-                                        ? humidities.reduce((a, b) => a + b) /
-                                            humidities.length
-                                        : 0.0;
-                                    double progress =
-                                        (avgHumidity - _humidityMinNormal) /
-                                            (_humidityMaxNormal -
-                                                _humidityMinNormal);
-                                    progress = progress.clamp(0.0, 1.0);
+                          // const SizedBox(height: defaultPadding),
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(
+                          //       horizontal: 16.0, vertical: 8.0),
+                          //   child: Column(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       Text(
+                          //         "Target Kelembapan",
+                          //         style: TextStyle(
+                          //             fontWeight: FontWeight.bold,
+                          //             color: Colors.blueGrey[800]),
+                          //       ),
+                          //       const SizedBox(height: 8),
+                          //       // Progress bar langsung hitung di widget, tanpa fungsi tambahan
+                          //       Builder(
+                          //         builder: (context) {
+                          //           List<double> humidities = [];
+                          //           for (var readings
+                          //               in _moduleReadings.values) {
+                          //             if (readings.isNotEmpty) {
+                          //               humidities.add(readings.last.humidity);
+                          //             }
+                          //           }
+                          //           double avgHumidity = humidities.isNotEmpty
+                          //               ? humidities.reduce((a, b) => a + b) /
+                          //                   humidities.length
+                          //               : 0.0;
+                          //           double progress =
+                          //               (avgHumidity - _humidityMinNormal) /
+                          //                   (_humidityMaxNormal -
+                          //                       _humidityMinNormal);
+                          //           progress = progress.clamp(0.0, 1.0);
 
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        LinearProgressIndicator(
-                                          value: progress,
-                                          minHeight: 10,
-                                          backgroundColor: Colors.grey[300],
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Colors.green),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "${(progress * 100).toStringAsFixed(0)}% tercapai dari target 100%",
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.black54),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
+                          //           return Column(
+                          //             crossAxisAlignment:
+                          //                 CrossAxisAlignment.start,
+                          //             children: [
+                          //               LinearProgressIndicator(
+                          //                 value: progress,
+                          //                 minHeight: 10,
+                          //                 backgroundColor: Colors.grey[300],
+                          //                 valueColor:
+                          //                     AlwaysStoppedAnimation<Color>(
+                          //                         Colors.green),
+                          //               ),
+                          //               const SizedBox(height: 4),
+                          //               Text(
+                          //                 "${(progress * 100).toStringAsFixed(0)}% tercapai dari target 100%",
+                          //                 style: const TextStyle(
+                          //                     fontSize: 12,
+                          //                     color: Colors.black54),
+                          //               ),
+                          //             ],
+                          //           );
+                          //         },
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           const SizedBox(height: defaultPadding),
                           _ModuleChartCard(
                             moduleName: "Module 1",
