@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:admin/screens/profil/profil_user.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Tambahkan import ini
 
 import '../../../constants.dart';
 
@@ -77,7 +78,9 @@ class ProfileCard extends StatelessWidget {
                     child: const Text('Batal'),
                   ),
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      await FirebaseAuth.instance
+                          .signOut(); // Tambahkan signOut
                       Navigator.pop(context);
                       Navigator.pushReplacementNamed(context, '/');
                     },

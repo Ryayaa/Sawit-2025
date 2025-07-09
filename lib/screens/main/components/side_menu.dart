@@ -97,6 +97,20 @@ class SideMenu extends StatelessWidget {
                 }
               },
             ),
+            DrawerListTile(
+              title: "About",
+              svgSrc:
+                  "assets/icons/info.svg", // Buat icon sesuai kebutuhan
+              routeName: '/about',
+              selected: currentRoute == '/about',
+              press: () {
+                if (currentRoute != '/about') {
+                  Navigator.pushNamed(context, '/about');
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -192,10 +206,12 @@ class DrawerListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: ListTile(
           onTap: press,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           leading: Container(
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
+              color:
+                  selected ? const Color(0xFF3A7D44) : const Color(0xFFF5F6FA),
               shape: BoxShape.circle,
             ),
             padding: const EdgeInsets.all(8),

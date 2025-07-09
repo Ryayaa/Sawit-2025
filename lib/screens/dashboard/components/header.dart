@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:admin/screens/profil/profil.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../constants.dart';
 
@@ -50,8 +51,10 @@ class ProfileCard extends StatelessWidget {
           Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const ProfilePage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 return FadeTransition(
                   opacity: animation,
                   child: child,
@@ -72,7 +75,9 @@ class ProfileCard extends StatelessWidget {
                     child: const Text('Batal'),
                   ),
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      // Tambahkan signOut sebelum navigasi
+                      await FirebaseAuth.instance.signOut();
                       Navigator.pop(context);
                       Navigator.pushReplacementNamed(context, '/');
                     },

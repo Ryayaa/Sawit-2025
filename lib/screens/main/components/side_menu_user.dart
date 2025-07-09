@@ -63,6 +63,19 @@ class SideMenuUser extends StatelessWidget {
                 }
               },
             ),
+            DrawerListTileUser(
+              title: "About",
+              svgSrc: "assets/icons/info.svg", // Pastikan ikon ini ada
+              routeName: '/about_user',
+              selected: currentRoute == '/about_user',
+              press: () {
+                if (currentRoute != '/about_user') {
+                  Navigator.pushReplacementNamed(context, '/about_user');
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+            ),
             // Tambahkan menu lain sesuai kebutuhan Anda
             const SizedBox(height: 24),
           ],

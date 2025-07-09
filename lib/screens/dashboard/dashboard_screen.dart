@@ -681,16 +681,26 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildModuleStatusCard(
       String title, IconData icon, Color color, Map<String, bool> status,
       {bool isCompact = false}) {
+    // Responsive size
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobileScreen = screenWidth < 400;
+
+    // Atur ukuran responsif
+    final double iconSize = isMobileScreen ? 18 : (isCompact ? 18 : 24);
+    final double subIconSize = isMobileScreen ? 12 : (isCompact ? 14 : 20);
+    final double titleFontSize = isMobileScreen ? 11 : (isCompact ? 12 : 16);
+    final double statusFontSize = isMobileScreen ? 8 : (isCompact ? 9 : 12);
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        padding: EdgeInsets.all(isCompact ? 8 : 16),
+        padding: EdgeInsets.all(isMobileScreen ? 6 : (isCompact ? 8 : 16)),
         constraints: BoxConstraints(
-          minWidth: isCompact ? 80 : 120,
-          maxWidth: isCompact ? 110 : 200,
+          minWidth: isMobileScreen ? 60 : (isCompact ? 80 : 120),
+          maxWidth: isMobileScreen ? 90 : (isCompact ? 110 : 200),
         ),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -700,63 +710,61 @@ class _DashboardViewState extends State<DashboardView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: isCompact ? 18 : 24, color: color),
-            SizedBox(height: isCompact ? 4 : 8),
+            Icon(icon, size: iconSize, color: color),
+            SizedBox(height: isMobileScreen ? 3 : (isCompact ? 4 : 8)),
             Text(
               title,
               style: TextStyle(
-                fontSize: isCompact ? 12 : 16,
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: isCompact ? 4 : 8),
+            SizedBox(height: isMobileScreen ? 3 : (isCompact ? 4 : 8)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.thermostat,
                   color: status['tempNormal']! ? Colors.green : Colors.red,
-                  size: isCompact ? 14 : 20,
+                  size: subIconSize,
                 ),
                 SizedBox(width: 2),
                 Expanded(
-                  // Ganti Flexible menjadi Expanded
                   child: Text(
                     status['tempNormal']! ? 'Suhu Normal' : 'Suhu Tidak Normal',
                     style: TextStyle(
-                      fontSize: isCompact ? 9 : 12,
+                      fontSize: statusFontSize,
                       color: status['tempNormal']! ? Colors.green : Colors.red,
                     ),
-                    softWrap: true, // Pastikan wrap
+                    softWrap: true,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: isCompact ? 2 : 4),
+            SizedBox(height: isMobileScreen ? 1 : (isCompact ? 2 : 4)),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start, // Tambahkan ini
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.water_drop,
                   color: status['humidityNormal']! ? Colors.green : Colors.red,
-                  size: isCompact ? 14 : 20,
+                  size: subIconSize,
                 ),
                 SizedBox(width: 2),
                 Expanded(
-                  // Ganti Flexible menjadi Expanded
                   child: Text(
                     status['humidityNormal']!
                         ? 'Kelembaban Normal'
                         : 'Kelembaban Tidak Normal',
                     style: TextStyle(
-                      fontSize: isCompact ? 9 : 12,
+                      fontSize: statusFontSize,
                       color:
                           status['humidityNormal']! ? Colors.green : Colors.red,
                     ),
-                    softWrap: true, // Pastikan wrap
+                    softWrap: true,
                   ),
                 ),
               ],

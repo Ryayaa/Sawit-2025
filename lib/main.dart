@@ -17,7 +17,8 @@ import 'screens/dashboard/pesan_screen.dart';
 import 'screens/history/user_history_screen.dart';
 import 'screens/dashboard/dashboard_user.dart'; // Import the DashboardUserScreen widget
 import 'screens/profil/profil_user.dart'; // Import the ProfileUserPage widget
-
+import 'screens/about/about_screen.dart';
+import 'screens/about/about_screen_user.dart';
 Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
@@ -78,8 +79,12 @@ class MyApp extends StatelessWidget {
           '/notification': (context) => const NotificationSettingsScreen(),
           '/user': (context) => const UserScreen(),
           '/user_history': (context) => UserHistoryScreen(),
-          '/dashboard_user': (context) => DashboardUser(), // ganti dengan nama widget dashboard user Anda
-          '/profil_user': (context) => ProfileUserPage(), // ganti dengan nama widget profil user Anda
+          '/dashboard_user': (context) =>
+              DashboardUser(), // ganti dengan nama widget dashboard user Anda
+          '/profil_user': (context) =>
+              ProfileUserPage(), // ganti dengan nama widget profil user Anda
+          '/about': (context) => const AboutScreen(),
+          '/about_user': (context) => const AboutScreenUser(),
         },
         builder: (context, child) {
           // Add error boundary
