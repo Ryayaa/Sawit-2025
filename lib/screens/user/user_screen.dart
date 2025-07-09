@@ -6,6 +6,7 @@ import 'package:admin/controllers/menu_app_controller.dart';
 import 'package:admin/responsive.dart';
 import 'package:provider/provider.dart';
 import '../dashboard/components/header.dart';
+import '../dashboard/tambah_user.dart';
 
 const kPrimaryColor = Color(0xFF3A7D44);
 const kAccentColor = Color(0xFF91C788);
@@ -51,6 +52,41 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
       });
     }
   }
+  void _confirmDelete(String userId) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Konfirmasi Hapus'),
+        content: const Text('Apakah Anda yakin ingin menghapus user ini dari database?'),
+        actions: [
+          TextButton(
+            child: const Text('Batal'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            onPressed: () async {
+              Navigator.of(context).pop(); // tutup dialog
+              try {
+                await FirebaseDatabase.instance.ref('User/$userId').remove();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('User berhasil dihapus')),
+                );
+                _fetchUsersFromFirebase(); // refresh daftar
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Gagal menghapus user')),
+                );
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +111,26 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                   children: [
                     const Header(title: "Data User"),
                     const SizedBox(height: defaultPadding),
+                    Align(
+      alignment: Alignment.centerRight,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const TambahUser()),
+          );
+        },
+        icon: const Icon(Icons.person_add),
+        label: const Text("Tambah User"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    ),
+    const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(defaultPadding),
                       decoration: BoxDecoration(
@@ -172,21 +228,25 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                                             ),
                                           ),
                                           ButtonBar(
-                                            alignment: MainAxisAlignment.end,
-                                            children: [
-                                              TextButton.icon(
-                                                onPressed: () {
-                                                  _showEditDialog(user);
-                                                },
-                                                icon: const Icon(Icons.edit, color: kAccentColor),
-                                                label: const Text('Edit', style: TextStyle(color: kAccentColor)),
-                                                style: TextButton.styleFrom(
-                                                  foregroundColor: kPrimaryColor,
-                                                  overlayColor: kAccentColor.withOpacity(0.1),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+  alignment: MainAxisAlignment.end,
+  children: [
+    TextButton.icon(
+      onPressed: () {
+        _showEditDialog(user);
+      },
+      icon: const Icon(Icons.edit, color: kAccentColor),
+      label: const Text('Edit', style: TextStyle(color: kAccentColor)),
+    ),
+    TextButton.icon(
+      onPressed: () {
+        _confirmDelete(user['id']);
+      },
+      icon: const Icon(Icons.delete, color: Colors.red),
+      label: const Text('Hapus', style: TextStyle(color: Colors.red)),
+    ),
+  ],
+),
+
                                         ],
                                       ),
                                     ),
@@ -231,8 +291,8 @@ class _UserScreenState extends State<UserScreen> with TickerProviderStateMixin {
                   _buildTextField('Email', emailController, readOnly: true),
                   _buildTextField('Nomor Telepon', phoneController),
                   _buildTextField('Alamat', addressController),
-                  _buildTextField('Password Lama', oldPasswordController),
-                  _buildTextField('Password Baru', newPasswordController),
+                  // _buildTextField('Password Lama', oldPasswordController),
+                  // _buildTextField('Password Baru', newPasswordController),
                   const SizedBox(height: 18),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,

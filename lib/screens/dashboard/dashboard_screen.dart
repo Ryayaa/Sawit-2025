@@ -361,39 +361,39 @@ class _DashboardViewState extends State<DashboardView> {
                               },
                             ),
                           ),
-                          const SizedBox(height: defaultPadding),
+                          // const SizedBox(height: defaultPadding),
 
-                          // Target Kelembapan
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Target Kelembapan",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blueGrey[800]),
-                                ),
-                                const SizedBox(height: 8),
-                                LinearProgressIndicator(
-                                  value: 0.71,
-                                  minHeight: 10,
-                                  backgroundColor: Colors.grey[300],
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.green),
-                                ),
-                                // const SizedBox(height: 4),
-                                // Text(
-                                //   "71% tercapai dari target 100%",
-                                //   style: TextStyle(
-                                //       fontSize: 12, color: Colors.black54),
-                                // ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: defaultPadding),
+                          // // Target Kelembapan
+                          // Padding(
+                          //   padding: const EdgeInsets.symmetric(
+                          //       horizontal: 16.0, vertical: 8.0),
+                          //   child: Column(
+                          //     crossAxisAlignment: CrossAxisAlignment.start,
+                          //     children: [
+                          //       Text(
+                          //         "Target Kelembapan",
+                          //         style: TextStyle(
+                          //             fontWeight: FontWeight.bold,
+                          //             color: Colors.blueGrey[800]),
+                          //       ),
+                          //       const SizedBox(height: 8),
+                          //       LinearProgressIndicator(
+                          //         value: 0.71,
+                          //         minHeight: 10,
+                          //         backgroundColor: Colors.grey[300],
+                          //         valueColor: AlwaysStoppedAnimation<Color>(
+                          //             Colors.green),
+                          //       ),
+                          //       // const SizedBox(height: 4),
+                          //       // Text(
+                          //       //   "71% tercapai dari target 100%",
+                          //       //   style: TextStyle(
+                          //       //       fontSize: 12, color: Colors.black54),
+                          //       // ),
+                          //     ],
+                          //   ),
+                          // ),
+                          // const SizedBox(height: defaultPadding),
 
                           // Modul 1 dengan Card hijau
                           Padding(
