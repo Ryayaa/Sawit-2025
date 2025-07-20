@@ -1,72 +1,72 @@
 # I-Sawit 🌴
 
-**I-Sawit** adalah aplikasi monitoring dan manajemen kebun sawit berbasis IoT yang dikembangkan menggunakan Flutter dan Firebase. Aplikasi ini membantu pengguna (admin & user) untuk memantau data sensor (suhu, kelembaban, kelembaban tanah, dan lokasi GPS) secara real-time dari beberapa modul perangkat IoT yang terpasang di lapangan.
+**I-Sawit** is an IoT-based oil palm plantation monitoring and management application developed using Flutter and Firebase. This app helps users (admin & user) to monitor sensor data (temperature, humidity, soil moisture, and GPS location) in real-time from multiple IoT device modules installed in the field.
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Main Features
 
-- **Dashboard Real-Time**  
-  Pantau suhu, kelembaban, dan status perangkat secara langsung.
-- **Monitoring Multi-Module**  
-  Mendukung banyak modul sensor untuk area kebun yang luas.
-- **Notifikasi Otomatis**  
-  Dapatkan peringatan jika suhu/kelembaban melebihi batas normal.
+- **Real-Time Dashboard**  
+  Monitor temperature, humidity, and device status instantly.
+- **Multi-Module Monitoring**  
+  Supports multiple sensor modules for large plantation areas.
+- **Automatic Notifications**  
+  Receive alerts if temperature/humidity exceeds normal limits.
 - **Log History**  
-  Lihat riwayat data sensor dan filter berdasarkan waktu & modul.
-- **Manajemen User**  
-  Kelola akun user dan admin dengan mudah.
-- **Integrasi GPS**  
-  Lacak lokasi perangkat secara visual di peta.
-- **Reset Password & Pesan**  
-  Fitur permintaan reset password dan notifikasi pesan.
+  View sensor data history and filter by time & module.
+- **User Management**  
+  Easily manage user and admin accounts.
+- **GPS Integration**  
+  Track device locations visually on the map.
+- **Password Reset & Messages**  
+  Request password reset and receive message notifications.
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## 🛠️ Technologies Used
 
 - **Flutter** (Frontend)
 - **Firebase Realtime Database** (Backend & Auth)
-- **ESP32 + Sensor DHT22, Soil Moisture, GPS** (IoT Device)
-- **LoRa** (Komunikasi antar modul IoT)
-- **Google Maps / OpenStreetMap** (Visualisasi lokasi)
+- **ESP32 + DHT22 Sensor, Soil Moisture, GPS** (IoT Device)
+- **LoRa** (Communication between IoT modules)
+- **Google Maps / OpenStreetMap** (Location visualization)
 
 ---
 
-## 📸 Tampilan Aplikasi
+## 📸 App Screenshots
 
 > ![Dashboard Screenshot](assets/images/dashboard_preview.png)
 > ![History Screenshot](assets/images/history_preview.png)
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Getting Started
 
-1. **Clone repository ini**
-2. Jalankan `flutter pub get`
-3. Konfigurasikan Firebase (lihat file `lib/config/firebase_options.dart`)
-4. Jalankan aplikasi:  
+1. **Clone this repository**
+2. Run `flutter pub get`
+3. Configure Firebase (see `lib/config/firebase_options.dart`)
+4. Run the app:  
    ```
    flutter run
    ```
-5. Untuk mode web:  
+5. For web mode:  
    ```
    flutter run -d chrome
    ```
 
 ---
 
-## 👨‍💻 Kontributor
+## 👨‍💻 Contributors
 
 - Arrya Fitriansyah  
 - Aldi Riadi  
-- Eka Helda
+- Sutan Burhan Rasyidin
 
 ---
 
-## 📄 Lisensi
+## 📄 License
 
-Aplikasi ini dikembangkan untuk keperluan edukasi dan tugas akhir di Politeknik Negeri Banjarmasin.
+This application was developed for educational purposes and as a final project at Politeknik Negeri Banjarmasin.
 
 ---
 
